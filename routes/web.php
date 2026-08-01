@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ClientController;
+use App\Services\BusinessHealthService;
+use App\Models\Client;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -9,9 +11,18 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
+    $client = Client::first();
+
+    $health = null;
+
+    if ($client) {
+        $health = (new BusinessHealthService())->calculate($client);
+    }
+
+    return view('dashboard.index', compact('health'));
+
+})->middleware(['auth', 'verified'])->name('dashboard');
 Route::middleware(['auth'])->group(function () {
 
     // Profile
