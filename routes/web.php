@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SecurityWorkspaceController;
 use App\Models\Client;
 use App\Services\BusinessHealthService;
 use App\Services\SecurityScoreService;
@@ -29,6 +30,12 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Profile
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
 
@@ -38,7 +45,29 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Client Workspaces
+    |--------------------------------------------------------------------------
+    */
+
     Route::resource('clients', ClientController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Client Security Workspace
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/clients/{client}/security',
+        [SecurityWorkspaceController::class, 'show']
+    )->name('security.workspace');
+
+    Route::patch(
+        '/clients/{client}/security-controls/{securityControl}',
+        [SecurityWorkspaceController::class, 'update']
+    )->name('security.controls.update');
 });
 
 require __DIR__.'/auth.php';

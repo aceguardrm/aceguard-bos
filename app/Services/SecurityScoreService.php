@@ -7,110 +7,74 @@ use App\Models\Client;
 class SecurityScoreService
 {
     /**
-     * Calculate the overall security score.
+     * Calculate the client's security score from stored controls.
      */
     public function calculate(Client $client): array
     {
-        $controls = [
+        $controls = $client->securityControls()
+            ->orderBy('category')
+            ->orderBy('control')
+            ->get();
 
-            'Multi-Factor Authentication' => [
-                'enabled' => true,
-                'points' => 15,
-            ],
-
-            'Microsoft 365 Security' => [
-                'enabled' => true,
-                'points' => 15,
-            ],
-
-            'Endpoint Protection' => [
-                'enabled' => true,
-                'points' => 10,
-            ],
-
-            'Firewall' => [
-                'enabled' => true,
-                'points' => 10,
-            ],
-
-            'Email Security' => [
-                'enabled' => true,
-                'points' => 10,
-            ],
-
-            'Backups' => [
-                'enabled' => true,
-                'points' => 10,
-            ],
-
-            'Vulnerability Scanning' => [
-                'enabled' => false,
-                'points' => 10,
-            ],
-
-            'Staff Awareness Training' => [
-                'enabled' => true,
-                'points' => 10,
-            ],
-
-            'Cyber Essentials' => [
-                'enabled' => false,
-                'points' => 5,
-            ],
-
-            'Password Policy' => [
-                'enabled' => true,
-                'points' => 5,
-            ],
-        ];
-
-        $score = 0;
-        $maximum = 0;
-
-        foreach ($controls as $control) {
-
-            $maximum += $control['points'];
-
-            if ($control['enabled']) {
-                $score += $control['points'];
-            }
-
+        if ($controls->isEmpty()) {
+            return [
+                'score' => 0,
+                'earned' => 0,
+                'maximum' => 0,
+                'rating' => 'Not assessed',
+                'controls' => collect(),
+                'completed' => 0,
+                'outstanding' => 0,
+                'recommendations' => [
+                    'Create the client’s first security assessment.',
+                ],
+            ];
         }
 
+        $earned = $controls->sum(
+            fn ($control) => $control->enabled
+                ? $control->points
+                : 0
+        );
+
+        $maximum = $controls->sum('maximum_points');
+
+        $score = $maximum > 0
+            ? (int) round(($earned / $maximum) * 100)
+            : 0;
+
+        $recommendations = $controls
+            ->where('enabled', false)
+            ->sortByDesc('maximum_points')
+            ->take(3)
+            ->map(
+                fn ($control) =>
+                    "Complete {$control->control} "
+                    . "(+{$control->maximum_points} points)"
+            )
+            ->values()
+            ->all();
+
         return [
-
-            'score' => round(($score / $maximum) * 100),
-
-            'earned' => $score,
-
+            'score' => $score,
+            'earned' => $earned,
             'maximum' => $maximum,
-
+            'rating' => $this->rating($score),
             'controls' => $controls,
-
-            'rating' => $this->rating(
-                round(($score / $maximum) * 100)
-            ),
-
+            'completed' => $controls->where('enabled', true)->count(),
+            'outstanding' => $controls->where('enabled', false)->count(),
+            'recommendations' => $recommendations,
         ];
     }
 
-    /**
-     * Convert score into rating.
-     */
     private function rating(int $score): string
     {
         return match (true) {
-
             $score >= 90 => 'Excellent',
-
             $score >= 75 => 'Good',
-
             $score >= 60 => 'Fair',
-
             $score >= 40 => 'Poor',
-
             default => 'Critical',
-
         };
     }
 }

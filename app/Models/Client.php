@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Client extends Model
 {
@@ -19,4 +20,12 @@ class Client extends Model
         'status',
         'notes',
     ];
+
+    /**
+     * Security controls assigned to this client.
+     */
+    public function securityControls(): HasMany
+    {
+        return $this->hasMany(SecurityControl::class);
+    }
 }
