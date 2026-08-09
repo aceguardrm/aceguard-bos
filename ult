@@ -1,0 +1,61 @@
+[90m= [39m[
+    [34m"[39m[34mscore[39m[34m"[39m => [35m93[39m,
+    [34m"[39m[34mrating[39m[34m"[39m => [32m"[39m[32mExcellent[39m[32m"[39m,
+    [34m"[39m[34mcomponents[39m[34m"[39m => [
+      [34m"[39m[34msecurity[39m[34m"[39m => [
+        [34m"[39m[34mlabel[39m[34m"[39m => [32m"[39m[32mSecurity[39m[32m"[39m,
+        [34m"[39m[34mscore[39m[34m"[39m => [35m95[39m,
+        [34m"[39m[34mweight[39m[34m"[39m => [35m60[39m,
+      ],
+      [34m"[39m[34mbusiness_health[39m[34m"[39m => [
+        [34m"[39m[34mlabel[39m[34m"[39m => [32m"[39m[32mBusiness Health[39m[32m"[39m,
+        [34m"[39m[34mscore[39m[34m"[39m => [35m90[39m,
+        [34m"[39m[34mweight[39m[34m"[39m => [35m40[39m,
+        [34m"[39m[34msource[39m[34m"[39m => [32m"[39m[32massessment[39m[32m"[39m,
+      ],
+    ],
+    [34m"[39m[34mbusiness_domains[39m[34m"[39m => [
+      [34m"[39m[34moperations[39m[34m"[39m => [
+        [34m"[39m[34mlabel[39m[34m"[39m => [32m"[39m[32mOperations[39m[32m"[39m,
+        [34m"[39m[34mscore[39m[34m"[39m => [35m92[39m,
+      ],
+      [34m"[39m[34mcontinuity[39m[34m"[39m => [
+        [34m"[39m[34mlabel[39m[34m"[39m => [32m"[39m[32mContinuity[39m[32m"[39m,
+        [34m"[39m[34mscore[39m[34m"[39m => [35m88[39m,
+      ],
+      [34m"[39m[34mdocumentation[39m[34m"[39m => [
+        [34m"[39m[34mlabel[39m[34m"[39m => [32m"[39m[32mDocumentation[39m[32m"[39m,
+        [34m"[39m[34mscore[39m[34m"[39m => [35m85[39m,
+      ],
+      [34m"[39m[34mcompliance[39m[34m"[39m => [
+        [34m"[39m[34mlabel[39m[34m"[39m => [32m"[39m[32mCompliance[39m[32m"[39m,
+        [34m"[39m[34mscore[39m[34m"[39m => [35m90[39m,
+      ],
+      [34m"[39m[34mtechnology[39m[34m"[39m => [
+        [34m"[39m[34mlabel[39m[34m"[39m => [32m"[39m[32mTechnology[39m[32m"[39m,
+        [34m"[39m[34mscore[39m[34m"[39m => [35m95[39m,
+      ],
+      [34m"[39m[34mreadiness[39m[34m"[39m => [
+        [34m"[39m[34mlabel[39m[34m"[39m => [32m"[39m[32mReadiness[39m[32m"[39m,
+        [34m"[39m[34mscore[39m[34m"[39m => [35m90[39m,
+      ],
+    ],
+    [34m"[39m[34mbusiness_assessment[39m[34m"[39m => [
+      [34m"[39m[34mexists[39m[34m"[39m => [36mtrue[39m,
+      [34m"[39m[34mstatus[39m[34m"[39m => [32m"[39m[32mcompleted[39m[32m"[39m,
+      [34m"[39m[34massessed_at[39m[34m"[39m => [34;4mIlluminate\Support\Carbon @1786067096[39;24m {#8750
+        [34mdate[39m: [36m2026-08-07 01:44:56.0 UTC (+00:00)[39m,
+      },
+    ],
+    [34m"[39m[34mpriorities[39m[34m"[39m => [
+      [
+        [34m"[39m[34mtype[39m[34m"[39m => [32m"[39m[32msecurity[39m[32m"[39m,
+        [34m"[39m[34mseverity[39m[34m"[39m => [32m"[39m[32mmedium[39m[32m"[39m,
+        [34m"[39m[34mtitle[39m[34m"[39m => [32m"[39m[32mCyber Essentials[39m[32m"[39m,
+        [34m"[39m[34mmessage[39m[34m"[39m => [32m"[39m[32mComplete this security control to recover 5 points.[39m[32m"[39m,
+        [34m"[39m[34mimpact[39m[34m"[39m => [35m5[39m,
+      ],
+    ],
+    [34m"[39m[34mpriority_count[39m[34m"[39m => [35m1[39m,
+    [34m"[39m[34msummary[39m[34m"[39m => [32m"[39m[32mBusiness performance is strong, with 1 priority item remaining.[39m[32m"[39m,
+  ]

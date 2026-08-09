@@ -1,61 +1,86 @@
 <?php
 
+use App\Http\Controllers\BusinessPulseController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SecurityWorkspaceController;
-use App\Models\Client;
-use App\Services\BusinessHealthService;
-use App\Services\SecurityScoreService;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Public
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    $client = Client::first();
+/*
+|--------------------------------------------------------------------------
+| Authenticated BOS
+|--------------------------------------------------------------------------
+*/
 
-    $health = null;
-    $security = null;
+Route::middleware(['auth', 'verified'])->group(function () {
 
-    if ($client) {
-        $health = (new BusinessHealthService())->calculate($client);
-        $security = (new SecurityScoreService())->calculate($client);
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | Executive Dashboard
+    |--------------------------------------------------------------------------
+    */
 
-    return view('dashboard.index', compact(
-        'health',
-        'security'
-    ));
-})->middleware(['auth', 'verified'])->name('dashboard');
+    Route::get(
+        '/dashboard',
+        [DashboardController::class, 'index']
+    )->name('dashboard');
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated Application Routes
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware(['auth'])->group(function () {
+
     /*
     |--------------------------------------------------------------------------
     | Profile
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/profile', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
+    Route::get(
+        '/profile',
+        [ProfileController::class, 'edit']
+    )->name('profile.edit');
 
-    Route::patch('/profile', [ProfileController::class, 'update'])
-        ->name('profile.update');
+    Route::patch(
+        '/profile',
+        [ProfileController::class, 'update']
+    )->name('profile.update');
 
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
+    Route::delete(
+        '/profile',
+        [ProfileController::class, 'destroy']
+    )->name('profile.destroy');
 
     /*
     |--------------------------------------------------------------------------
-    | Client Workspaces
+    | Workspaces
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('clients', ClientController::class);
+    Route::resource(
+        'clients',
+        ClientController::class
+    );
 
     /*
     |--------------------------------------------------------------------------
-    | Client Security Workspace
+    | Security Workspace
     |--------------------------------------------------------------------------
     */
 
@@ -68,6 +93,23 @@ Route::middleware(['auth'])->group(function () {
         '/clients/{client}/security-controls/{securityControl}',
         [SecurityWorkspaceController::class, 'update']
     )->name('security.controls.update');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Business Pulse™ Workspace
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/clients/{client}/business-pulse',
+        [BusinessPulseController::class, 'show']
+    )->name('business-pulse.workspace');
+
+    Route::patch(
+        '/clients/{client}/business-pulse',
+        [BusinessPulseController::class, 'update']
+    )->name('business-pulse.update');
+
 });
 
 require __DIR__.'/auth.php';

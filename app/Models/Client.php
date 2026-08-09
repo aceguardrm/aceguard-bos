@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Client extends Model
 {
@@ -22,10 +23,18 @@ class Client extends Model
     ];
 
     /**
-     * Security controls assigned to this client.
+     * Security controls assigned to this workspace.
      */
     public function securityControls(): HasMany
     {
         return $this->hasMany(SecurityControl::class);
+    }
+
+    /**
+     * Current Business Pulse™ assessment.
+     */
+    public function businessPulseAssessment(): HasOne
+    {
+        return $this->hasOne(BusinessPulseAssessment::class);
     }
 }

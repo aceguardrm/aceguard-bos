@@ -1,0 +1,16 @@
+[90m= [39m[34;4mApp\Models\Client[39;24m {#8636
+    [34mid[39m: [35m1[39m,
+    [34mcompany_name[39m: [32m"[39m[32mAceGuard Ltd[39m[32m"[39m,
+    [34mcontact_name[39m: [32m"[39m[32mRay Mbangu[39m[32m"[39m,
+    [34memail[39m: [32m"[39m[32mray.m@aceguard.co.uk[39m[32m"[39m,
+    [34mphone[39m: [32m"[39m[32m01234567890[39m[32m"[39m,
+    [34mwebsite[39m: [32m"[39m[32mwww.aceguard.co.uk[39m[32m"[39m,
+    [34maddress[39m: [32m"[39m[32m1 cyber house[39m[32m"[39m,
+    [34mcity[39m: [32m"[39m[32mHatfield[39m[32m"[39m,
+    [34mpostcode[39m: [32m"[39m[32mAl108le[39m[32m"[39m,
+    [34mcountry[39m: [32m"[39m[32mUnited Kingdom[39m[32m"[39m,
+    [34mstatus[39m: [32m"[39m[32mActive[39m[32m"[39m,
+    [34mnotes[39m: [32m"[39m[32mFirst CRM Client[39m[32m"[39m,
+    [34mcreated_at[39m: [32m"[39m[32m2026-06-29 16:28:59[39m[32m"[39m,
+    [34mupdated_at[39m: [32m"[39m[32m2026-06-29 16:28:59[39m[32m"[39m,
+  }
