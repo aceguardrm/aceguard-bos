@@ -4,6 +4,7 @@ use App\Http\Controllers\BusinessPulseController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SecurityWorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -67,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
         [ProfileController::class, 'destroy']
     )->name('profile.destroy');
 
+
     /*
     |--------------------------------------------------------------------------
     | Workspaces
@@ -77,6 +79,19 @@ Route::middleware(['auth'])->group(function () {
         'clients',
         ClientController::class
     );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Projects
+    |--------------------------------------------------------------------------
+    */
+
+    Route::resource(
+        'projects',
+        ProjectController::class
+    );
+
 
     /*
     |--------------------------------------------------------------------------
@@ -93,6 +108,7 @@ Route::middleware(['auth'])->group(function () {
         '/clients/{client}/security-controls/{securityControl}',
         [SecurityWorkspaceController::class, 'update']
     )->name('security.controls.update');
+
 
     /*
     |--------------------------------------------------------------------------

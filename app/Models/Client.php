@@ -37,4 +37,12 @@ class Client extends Model
     {
         return $this->hasOne(BusinessPulseAssessment::class);
     }
+
+    /**
+     * Projects belonging to this organisation workspace.
+     */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
 }
