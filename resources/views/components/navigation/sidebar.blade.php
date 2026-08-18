@@ -120,7 +120,7 @@
             </span>
 
             <span class="ag-navigation__badge">
-                Soon
+                Live
             </span>
         </a>
 
