@@ -163,7 +163,16 @@ class ClientController extends Controller
         |
         */
 
-        $openProjects = 0;
+        $openProjects = $client
+    ->projects()
+    ->whereNotIn(
+        'status',
+        [
+            'completed',
+            'cancelled',
+        ]
+    )
+    ->count();
         $documentsCount = 0;
         $appointmentsCount = 0;
 
