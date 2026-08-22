@@ -461,7 +461,10 @@
 
             {{-- Projects --}}
 
-            <div class="ag-module-tile ag-module-tile--disabled">
+            <a
+                href="{{ route('projects.index', ['client' => $client->id]) }}"
+                class="ag-module-tile ag-module-tile--projects"
+            >
 
                 <div class="ag-module-tile__icon">
                     <i class="fas fa-diagram-project"></i>
@@ -482,11 +485,13 @@
                 </div>
 
 
-                <div class="ag-module-badge">
-                    Soon
+                <div class="ag-module-score">
+                    {{ $openProjects }}
+
+                    <i class="fas fa-arrow-right"></i>
                 </div>
 
-            </div>
+            </a>
 
 
             {{-- Microsoft 365 --}}
@@ -1029,19 +1034,22 @@
 
 
     {{-- ================================================================
-        OPERATIONAL MODULE PREVIEW
+        OPERATIONAL MODULES
     ================================================================ --}}
 
     <section class="ag-operational-grid">
 
-
-        <article class="ag-operation-card">
+        {{-- ACTIVE PROJECTS --}}
+        <a
+            href="{{ route('projects.index', ['client' => $client->id]) }}"
+            class="ag-operation-card ag-operation-card--link"
+        >
 
             <div class="ag-operation-icon ag-operation-icon--blue">
                 <i class="fas fa-diagram-project"></i>
             </div>
 
-            <div>
+            <div class="ag-operation-content">
 
                 <span>
                     Active Projects
@@ -1052,21 +1060,32 @@
                 </strong>
 
                 <small>
-                    Project module coming next
+                    View projects for {{ $client->company_name }}
                 </small>
 
             </div>
 
-        </article>
+            <div class="ag-operation-action">
+
+                <span class="ag-operation-live">
+                    Live
+                </span>
+
+                <i class="fas fa-arrow-right"></i>
+
+            </div>
+
+        </a>
 
 
+        {{-- DOCUMENTS --}}
         <article class="ag-operation-card">
 
             <div class="ag-operation-icon ag-operation-icon--green">
                 <i class="fas fa-folder-open"></i>
             </div>
 
-            <div>
+            <div class="ag-operation-content">
 
                 <span>
                     Documents
@@ -1082,16 +1101,25 @@
 
             </div>
 
+            <div class="ag-operation-action">
+
+                <span class="ag-operation-soon">
+                    Soon
+                </span>
+
+            </div>
+
         </article>
 
 
+        {{-- SCHEDULED ACTIVITIES --}}
         <article class="ag-operation-card">
 
             <div class="ag-operation-icon ag-operation-icon--amber">
                 <i class="fas fa-calendar-days"></i>
             </div>
 
-            <div>
+            <div class="ag-operation-content">
 
                 <span>
                     Scheduled Activities
@@ -1104,6 +1132,14 @@
                 <small>
                     Planner integration planned
                 </small>
+
+            </div>
+
+            <div class="ag-operation-action">
+
+                <span class="ag-operation-soon">
+                    Soon
+                </span>
 
             </div>
 
@@ -1615,6 +1651,13 @@ a.ag-module-tile:hover {
     background: #dbeafe;
 }
 
+.ag-module-tile--projects
+.ag-module-tile__icon {
+    color: #2563eb;
+
+    background: #dbeafe;
+}
+
 .ag-module-tile--disabled
 .ag-module-tile__icon {
     color: #64748b;
@@ -2057,14 +2100,57 @@ a.ag-module-tile:hover {
 }
 
 .ag-operation-card {
-    display: flex;
+    min-width: 0;
+
+    display: grid;
+
+    grid-template-columns:
+        46px
+        minmax(0, 1fr)
+        auto;
+
     align-items: center;
 
     gap: 14px;
 
     padding: 18px;
 
+    border: 1px solid #e5e7eb;
+
     border-radius: 16px;
+
+    color: inherit;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 10px 28px
+        rgba(15, 23, 42, .05);
+}
+
+.ag-operation-card--link {
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        border-color .18s ease;
+}
+
+.ag-operation-card--link:hover {
+    color: inherit;
+
+    text-decoration: none;
+
+    transform: translateY(-2px);
+
+    border-color: #bfdbfe;
+
+    box-shadow:
+        0 14px 32px
+        rgba(15, 23, 42, .09);
 }
 
 .ag-operation-icon {
@@ -2078,6 +2164,8 @@ a.ag-module-tile:hover {
     justify-content: center;
 
     border-radius: 13px;
+
+    font-size: 16px;
 }
 
 .ag-operation-icon--blue {
@@ -2098,30 +2186,104 @@ a.ag-module-tile:hover {
     background: #fef3c7;
 }
 
-.ag-operation-card span,
-.ag-operation-card strong,
-.ag-operation-card small {
+.ag-operation-content {
+    min-width: 0;
+}
+
+.ag-operation-content span,
+.ag-operation-content strong,
+.ag-operation-content small {
     display: block;
 }
 
-.ag-operation-card span {
+.ag-operation-content span {
     color: #64748b;
 
     font-size: 12px;
+
+    font-weight: 500;
 }
 
-.ag-operation-card strong {
+.ag-operation-content strong {
     margin: 2px 0;
 
     color: #0f172a;
 
     font-size: 23px;
+
+    font-weight: 700;
 }
 
-.ag-operation-card small {
+.ag-operation-content small {
     color: #94a3b8;
 
     font-size: 10px;
+
+    line-height: 1.4;
+}
+
+.ag-operation-action {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-end;
+
+    justify-content: center;
+
+    gap: 8px;
+}
+
+.ag-operation-action > i {
+    color: #94a3b8;
+
+    font-size: 13px;
+
+    transition:
+        color .18s ease,
+        transform .18s ease;
+}
+
+.ag-operation-card--link:hover
+.ag-operation-action > i {
+    color: #2563eb;
+
+    transform: translateX(3px);
+}
+
+.ag-operation-live,
+.ag-operation-soon {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 5px 8px;
+
+    border-radius: 999px;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    line-height: 1;
+
+    text-transform: uppercase;
+
+    letter-spacing: .03em;
+}
+
+.ag-operation-live {
+    color: #1d4ed8;
+
+    background: #dbeafe;
+}
+
+.ag-operation-soon {
+    color: #64748b;
+
+    background: #f1f5f9;
 }
 
 

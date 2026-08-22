@@ -11,15 +11,36 @@ class ProjectController extends Controller
     /**
      * Display a listing of projects.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $projects = Project::with('client')
-            ->latest()
-            ->paginate(12);
+        $query = Project::with('client')
+            ->latest();
+
+        $selectedClient = null;
+
+        if ($request->filled('client')) {
+            $selectedClient = Client::find(
+                $request->integer('client')
+            );
+
+            if ($selectedClient) {
+                $query->where(
+                    'client_id',
+                    $selectedClient->id
+                );
+            }
+        }
+
+        $projects = $query
+            ->paginate(12)
+            ->withQueryString();
 
         return view(
             'projects.index',
-            compact('projects')
+            compact(
+                'projects',
+                'selectedClient'
+            )
         );
     }
 
@@ -117,7 +138,10 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        $project->load('client');
+        $project->load([
+            'client',
+            'tasks',
+        ]);
 
         return view(
             'projects.show',

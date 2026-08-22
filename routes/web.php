@@ -5,6 +5,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectTaskController;
 use App\Http\Controllers\SecurityWorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,13 +19,17 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
 /*
 |--------------------------------------------------------------------------
 | Authenticated BOS
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware([
+    'auth',
+    'verified',
+])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
@@ -38,6 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     )->name('dashboard');
 
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -71,7 +77,7 @@ Route::middleware(['auth'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Workspaces
+    | Organisation Workspaces
     |--------------------------------------------------------------------------
     */
 
@@ -91,6 +97,33 @@ Route::middleware(['auth'])->group(function () {
         'projects',
         ProjectController::class
     );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Project Tasks / Milestones
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post(
+        '/projects/{project}/tasks',
+        [ProjectTaskController::class, 'store']
+    )->name('project-tasks.store');
+
+    Route::patch(
+        '/projects/{project}/tasks/{projectTask}',
+        [ProjectTaskController::class, 'update']
+    )->name('project-tasks.update');
+
+    Route::patch(
+        '/projects/{project}/tasks/{projectTask}/toggle',
+        [ProjectTaskController::class, 'toggle']
+    )->name('project-tasks.toggle');
+
+    Route::delete(
+        '/projects/{project}/tasks/{projectTask}',
+        [ProjectTaskController::class, 'destroy']
+    )->name('project-tasks.destroy');
 
 
     /*
