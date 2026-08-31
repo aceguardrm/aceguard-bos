@@ -48,7 +48,7 @@
 
     $isOverdue =
         $project->due_date
-        && $project->due_date->isPast()
+        && $project->due_date->copy()->startOfDay()->lt(now()->startOfDay())
         && !in_array(
             $project->status,
             ['completed', 'cancelled']
@@ -69,7 +69,7 @@
     $overdueTaskCount = $tasks
         ->filter(function ($task) {
             return $task->due_date
-                && $task->due_date->isPast()
+                && $task->due_date->copy()->startOfDay()->lt(now()->startOfDay())
                 && $task->status !== 'completed';
         })
         ->count();
@@ -386,6 +386,129 @@
 
 
     {{-- ================================================================
+        DELIVERY HEALTH
+    ================================================================ --}}
+
+    @php
+        $deliveryHealthKey = $project->deliveryHealthKey();
+        $deliveryHealthLabel = $project->deliveryHealthLabel();
+        $deliveryHealthScore = $project->deliveryHealthScore();
+        $deliveryHealthDescription = $project->deliveryHealthDescription();
+
+        $deliveryHealthClass = match ($deliveryHealthKey) {
+            'healthy' => 'healthy',
+            'attention' => 'attention',
+            'at_risk' => 'risk',
+            'inactive' => 'inactive',
+            default => 'neutral',
+        };
+
+        $deliveryHealthIcon = match ($deliveryHealthKey) {
+            'healthy' => 'fa-circle-check',
+            'attention' => 'fa-triangle-exclamation',
+            'at_risk' => 'fa-shield-halved',
+            'inactive' => 'fa-circle-minus',
+            default => 'fa-circle-info',
+        };
+
+        $deliveryOverdueTasks = $project->overdueTaskCount();
+        $deliveryOverdueMilestones = $project->overdueMilestoneCount();
+        $deliveryHighPriorityTasks = $project->incompleteHighPriorityTaskCount();
+        $deliveryDaysUntilDue = $project->daysUntilDue();
+    @endphp
+
+    <section class="ag-delivery-health ag-delivery-health--{{ $deliveryHealthClass }}">
+
+        <div class="ag-delivery-health__header">
+
+            <div class="ag-delivery-health__title-group">
+
+                <div class="ag-delivery-health__icon">
+                    <i class="fa-solid {{ $deliveryHealthIcon }}"></i>
+                </div>
+
+                <div>
+                    <span class="ag-project-section-label">
+                        BOS Intelligence
+                    </span>
+
+                    <h3>Delivery Health</h3>
+
+                    <p>
+                        Automated assessment of project delivery risk and execution health.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="ag-delivery-health__status">
+
+                <span class="ag-delivery-health__badge">
+                    {{ $deliveryHealthLabel }}
+                </span>
+
+                <div class="ag-delivery-health__score">
+                    <strong>{{ $deliveryHealthScore }}</strong>
+                    <span>/ 100</span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="ag-delivery-health__body">
+
+            <div class="ag-delivery-health__assessment">
+
+                <span>Executive Assessment</span>
+
+                <p>
+                    {{ $deliveryHealthDescription }}
+                </p>
+
+            </div>
+
+            <div class="ag-delivery-health__metrics">
+
+                <div class="ag-delivery-health__metric">
+                    <span>Overdue Tasks</span>
+                    <strong>{{ $deliveryOverdueTasks }}</strong>
+                </div>
+
+                <div class="ag-delivery-health__metric">
+                    <span>Overdue Milestones</span>
+                    <strong>{{ $deliveryOverdueMilestones }}</strong>
+                </div>
+
+                <div class="ag-delivery-health__metric">
+                    <span>Priority Actions</span>
+                    <strong>{{ $deliveryHighPriorityTasks }}</strong>
+                </div>
+
+                <div class="ag-delivery-health__metric">
+                    <span>Deadline Position</span>
+
+                    <strong>
+                        @if ($deliveryDaysUntilDue === null)
+                            No date
+                        @elseif ($deliveryDaysUntilDue < 0)
+                            {{ abs($deliveryDaysUntilDue) }}d overdue
+                        @elseif ($deliveryDaysUntilDue === 0)
+                            Due today
+                        @else
+                            {{ $deliveryDaysUntilDue }}d remaining
+                        @endif
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    {{-- ================================================================
         TASKS & MILESTONES
     ================================================================ --}}
 
@@ -510,7 +633,7 @@
 
                         $taskIsOverdue =
                             $task->due_date
-                            && $task->due_date->isPast()
+                            && $task->due_date->copy()->startOfDay()->lt(now()->startOfDay())
                             && $task->status !== 'completed';
                     @endphp
 
@@ -1755,6 +1878,221 @@
     color: #94a3b8;
 
     font-size: 10px;
+}
+
+
+
+/* ================================================================
+   DELIVERY HEALTH
+================================================================ */
+
+.ag-delivery-health {
+    padding: 24px;
+    border: 1px solid #e5e7eb;
+    border-radius: 19px;
+    background: #ffffff;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, .05);
+}
+
+.ag-delivery-health__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.ag-delivery-health__title-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.ag-delivery-health__icon {
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    font-size: 21px;
+}
+
+.ag-delivery-health__title-group h3 {
+    margin: 5px 0 6px;
+    color: #0f172a;
+    font-size: 21px;
+}
+
+.ag-delivery-health__title-group p {
+    margin: 0;
+    color: #64748b;
+}
+
+.ag-delivery-health__status {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.ag-delivery-health__badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+.ag-delivery-health__score {
+    min-width: 82px;
+    text-align: right;
+}
+
+.ag-delivery-health__score strong {
+    color: #0f172a;
+    font-size: 28px;
+    line-height: 1;
+}
+
+.ag-delivery-health__score span {
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.ag-delivery-health__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 2fr);
+    gap: 22px;
+    margin-top: 22px;
+}
+
+.ag-delivery-health__assessment {
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 15px;
+    background: #f8fafc;
+}
+
+.ag-delivery-health__assessment span {
+    display: block;
+    margin-bottom: 7px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.ag-delivery-health__assessment p {
+    margin: 0;
+    color: #334155;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.ag-delivery-health__metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.ag-delivery-health__metric {
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 15px;
+    background: #ffffff;
+}
+
+.ag-delivery-health__metric span,
+.ag-delivery-health__metric strong {
+    display: block;
+}
+
+.ag-delivery-health__metric span {
+    margin-bottom: 6px;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.ag-delivery-health__metric strong {
+    color: #0f172a;
+    font-size: 17px;
+}
+
+/* HEALTHY */
+
+.ag-delivery-health--healthy {
+    border-left: 4px solid #10b981;
+}
+
+.ag-delivery-health--healthy .ag-delivery-health__icon,
+.ag-delivery-health--healthy .ag-delivery-health__badge {
+    color: #047857;
+    background: #d1fae5;
+}
+
+/* ATTENTION */
+
+.ag-delivery-health--attention {
+    border-left: 4px solid #f59e0b;
+}
+
+.ag-delivery-health--attention .ag-delivery-health__icon,
+.ag-delivery-health--attention .ag-delivery-health__badge {
+    color: #b45309;
+    background: #fef3c7;
+}
+
+/* AT RISK */
+
+.ag-delivery-health--risk {
+    border-left: 4px solid #ef4444;
+}
+
+.ag-delivery-health--risk .ag-delivery-health__icon,
+.ag-delivery-health--risk .ag-delivery-health__badge {
+    color: #b91c1c;
+    background: #fee2e2;
+}
+
+/* INACTIVE */
+
+.ag-delivery-health--inactive {
+    border-left: 4px solid #94a3b8;
+}
+
+.ag-delivery-health--inactive .ag-delivery-health__icon,
+.ag-delivery-health--inactive .ag-delivery-health__badge {
+    color: #475569;
+    background: #f1f5f9;
+}
+
+@media (max-width: 1100px) {
+    .ag-delivery-health__body {
+        grid-template-columns: 1fr;
+    }
+
+    .ag-delivery-health__metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .ag-delivery-health__header {
+        flex-direction: column;
+    }
+
+    .ag-delivery-health__status {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .ag-delivery-health__metrics {
+        grid-template-columns: 1fr;
+    }
 }
 
 

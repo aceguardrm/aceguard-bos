@@ -87,6 +87,33 @@ class Project extends Model
             ->count();
     }
 
+    public function overdueMilestoneCount(): int
+    {
+        return $this
+            ->tasks()
+            ->where('is_milestone', true)
+            ->whereNot('status', 'completed')
+            ->whereNotNull('due_date')
+            ->whereDate(
+                'due_date',
+                '<',
+                now()->toDateString()
+            )
+            ->count();
+    }
+
+    public function incompleteHighPriorityTaskCount(): int
+    {
+        return $this
+            ->tasks()
+            ->whereIn(
+                'priority',
+                ['high', 'critical']
+            )
+            ->whereNot('status', 'completed')
+            ->count();
+    }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -115,8 +142,8 @@ class Project extends Model
         $totalTasks = $this->taskCount();
 
         /*
-         * Preserve the manually-entered project
-         * progress until tasks actually exist.
+         * Preserve manually-entered project progress
+         * until tasks actually exist.
          */
         if ($totalTasks === 0) {
             return;
@@ -130,5 +157,164 @@ class Project extends Model
                 'progress' => $progress,
             ]);
         }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delivery Health Intelligence
+    |--------------------------------------------------------------------------
+    */
+
+    public function isProjectOverdue(): bool
+    {
+        return $this->due_date
+            && $this->due_date->copy()->startOfDay()->lt(now()->startOfDay())
+            && !in_array(
+                $this->status,
+                ['completed', 'cancelled']
+            );
+    }
+
+    public function daysUntilDue(): ?int
+    {
+        if (!$this->due_date) {
+            return null;
+        }
+
+        return now()
+            ->startOfDay()
+            ->diffInDays(
+                $this->due_date->copy()->startOfDay(),
+                false
+            );
+    }
+
+    public function deliveryHealthKey(): string
+    {
+        /*
+         * Completed projects are always considered healthy.
+         */
+        if ($this->status === 'completed') {
+            return 'healthy';
+        }
+
+        /*
+         * Cancelled projects are not active delivery risks.
+         */
+        if ($this->status === 'cancelled') {
+            return 'inactive';
+        }
+
+        /*
+         * Immediate project-level risk.
+         */
+        if ($this->isProjectOverdue()) {
+            return 'at_risk';
+        }
+
+        /*
+         * Overdue milestones indicate significant delivery risk.
+         */
+        if ($this->overdueMilestoneCount() > 0) {
+            return 'at_risk';
+        }
+
+        /*
+         * Multiple overdue tasks indicate material delivery risk.
+         */
+        if ($this->overdueTaskCount() >= 2) {
+            return 'at_risk';
+        }
+
+        /*
+         * A critical outstanding task should trigger attention.
+         */
+        $criticalOutstanding =
+            $this
+                ->tasks()
+                ->where('priority', 'critical')
+                ->whereNot('status', 'completed')
+                ->exists();
+
+        if ($criticalOutstanding) {
+            return 'attention';
+        }
+
+        /*
+         * Any overdue task should trigger attention.
+         */
+        if ($this->overdueTaskCount() > 0) {
+            return 'attention';
+        }
+
+        /*
+         * Approaching deadline with incomplete delivery.
+         */
+        $daysUntilDue =
+            $this->daysUntilDue();
+
+        if (
+            $daysUntilDue !== null
+            && $daysUntilDue >= 0
+            && $daysUntilDue <= 7
+            && (int) $this->progress < 100
+        ) {
+            return 'attention';
+        }
+
+        /*
+         * High-priority incomplete work also needs executive attention.
+         */
+        if (
+            $this->incompleteHighPriorityTaskCount() > 0
+            && (int) $this->progress < 75
+        ) {
+            return 'attention';
+        }
+
+        return 'healthy';
+    }
+
+    public function deliveryHealthLabel(): string
+    {
+        return match ($this->deliveryHealthKey()) {
+            'healthy' => 'Healthy',
+            'attention' => 'Attention',
+            'at_risk' => 'At Risk',
+            'inactive' => 'Inactive',
+            default => 'Unknown',
+        };
+    }
+
+    public function deliveryHealthDescription(): string
+    {
+        return match ($this->deliveryHealthKey()) {
+            'healthy' =>
+                'Delivery is progressing without material risk indicators.',
+
+            'attention' =>
+                'Delivery requires attention due to deadlines, priority work or outstanding actions.',
+
+            'at_risk' =>
+                'Delivery is at risk due to overdue work, overdue milestones or project delay.',
+
+            'inactive' =>
+                'This project is no longer active.',
+
+            default =>
+                'Delivery health could not be determined.',
+        };
+    }
+
+    public function deliveryHealthScore(): int
+    {
+        return match ($this->deliveryHealthKey()) {
+            'healthy' => 100,
+            'attention' => 65,
+            'at_risk' => 30,
+            'inactive' => 0,
+            default => 50,
+        };
     }
 }
