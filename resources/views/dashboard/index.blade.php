@@ -585,6 +585,202 @@
 
 
     {{-- ================================================================
+
+    {{-- ================================================================
+        PROJECT DELIVERY INTELLIGENCE
+    ================================================================ --}}
+
+    @php
+        $deliveryHealthKey = match (true) {
+            $averageDeliveryHealth >= 80 => 'healthy',
+            $averageDeliveryHealth >= 50 => 'attention',
+            $averageDeliveryHealth > 0 => 'risk',
+            default => 'inactive',
+        };
+
+        $deliveryHealthLabel = match ($deliveryHealthKey) {
+            'healthy' => 'Healthy',
+            'attention' => 'Attention',
+            'risk' => 'At Risk',
+            default => 'No Portfolio Data',
+        };
+    @endphp
+
+    <section class="ag-delivery ag-delivery--{{ $deliveryHealthKey }}">
+
+        <div class="ag-delivery__header">
+            <div>
+                <span class="ag-kicker ag-kicker--dark">
+                    BOS Delivery Intelligence
+                </span>
+
+                <h3>Project Portfolio Health</h3>
+
+                <p>
+                    Executive visibility across active delivery,
+                    deadlines and projects requiring management attention.
+                </p>
+            </div>
+
+            <a
+                href="{{ route('projects.index') }}"
+                class="ag-delivery__action"
+            >
+                View Portfolio
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="ag-delivery__layout">
+
+            <div class="ag-delivery-score">
+                <div
+                    class="ag-delivery-ring ag-delivery-ring--{{ $deliveryHealthKey }}"
+                    style="--delivery-score: {{ $averageDeliveryHealth }};"
+                >
+                    <div class="ag-delivery-ring__centre">
+                        <strong>{{ $averageDeliveryHealth }}</strong>
+                        <span>/ 100</span>
+                    </div>
+                </div>
+
+                <div class="ag-delivery-score__copy">
+                    <span>Portfolio Health</span>
+                    <strong>{{ $deliveryHealthLabel }}</strong>
+
+                    <small>
+                        {{ $totalProjects }}
+                        {{ \Illuminate\Support\Str::plural('project', $totalProjects) }}
+                        assessed
+                    </small>
+                </div>
+            </div>
+
+            <div class="ag-delivery-metrics">
+
+                <div class="ag-delivery-metric ag-delivery-metric--healthy">
+                    <span>Healthy</span>
+                    <strong>{{ $healthyProjects }}</strong>
+                    <small>On-track delivery</small>
+                </div>
+
+                <div class="ag-delivery-metric ag-delivery-metric--attention">
+                    <span>Attention</span>
+                    <strong>{{ $attentionProjects }}</strong>
+                    <small>Management attention</small>
+                </div>
+
+                <div class="ag-delivery-metric ag-delivery-metric--risk">
+                    <span>At Risk</span>
+                    <strong>{{ $atRiskProjects }}</strong>
+                    <small>Delivery risk</small>
+                </div>
+
+                <div class="ag-delivery-metric">
+                    <span>Active</span>
+                    <strong>{{ $activeProjects }}</strong>
+                    <small>Current projects</small>
+                </div>
+
+                <div class="ag-delivery-metric">
+                    <span>Overdue</span>
+                    <strong>{{ $overdueProjects }}</strong>
+                    <small>Past deadline</small>
+                </div>
+
+                <div class="ag-delivery-metric">
+                    <span>Due Soon</span>
+                    <strong>{{ $dueSoonProjects }}</strong>
+                    <small>Next 7 days</small>
+                </div>
+
+            </div>
+
+        </div>
+
+        @if($priorityDeliveryProjects->isNotEmpty())
+
+            <div class="ag-delivery-priority">
+
+                <div class="ag-delivery-priority__heading">
+                    <div>
+                        <span>Priority Delivery</span>
+                        <strong>
+                            Projects requiring executive attention
+                        </strong>
+                    </div>
+
+                    <span class="ag-delivery-priority__count">
+                        {{ $priorityDeliveryProjects->count() }}
+                    </span>
+                </div>
+
+                @foreach($priorityDeliveryProjects as $deliveryProject)
+
+                    @php
+                        $projectHealthClass = match (
+                            $deliveryProject->deliveryHealthKey()
+                        ) {
+                            'healthy' => 'healthy',
+                            'attention' => 'attention',
+                            'at_risk' => 'risk',
+                            default => 'inactive',
+                        };
+                    @endphp
+
+                    <a
+                        href="{{ route('projects.show', $deliveryProject) }}"
+                        class="ag-delivery-project"
+                    >
+                        <span
+                            class="ag-delivery-project__marker ag-delivery-project__marker--{{ $projectHealthClass }}"
+                        ></span>
+
+                        <div class="ag-delivery-project__copy">
+                            <strong>{{ $deliveryProject->name }}</strong>
+
+                            <span>
+                                {{ $deliveryProject->client?->name ?? 'No organisation' }}
+                            </span>
+                        </div>
+
+                        <div class="ag-delivery-project__status">
+                            <strong>
+                                {{ $deliveryProject->deliveryHealthLabel() }}
+                            </strong>
+
+                            <span>
+                                {{ $deliveryProject->deliveryHealthScore() }}/100
+                            </span>
+                        </div>
+
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+
+                @endforeach
+
+            </div>
+
+        @else
+
+            <div class="ag-delivery-positive">
+                <i class="fas fa-circle-check"></i>
+
+                <div>
+                    <strong>No priority delivery issues</strong>
+
+                    <p>
+                        No projects currently require executive
+                        delivery attention.
+                    </p>
+                </div>
+            </div>
+
+        @endif
+
+    </section>
+
+    {{-- ================================================================
         QUICK METRICS
     ================================================================ --}}
 
@@ -1869,6 +2065,458 @@
 
 
 /* ================================================================
+
+/* ================================================================
+   PROJECT DELIVERY INTELLIGENCE
+================================================================ */
+
+.ag-delivery {
+    position: relative;
+    overflow: hidden;
+    padding: 26px;
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid #94a3b8;
+    border-radius: 20px;
+    background:
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #f8fafc 100%
+        );
+    box-shadow:
+        0 12px 30px
+        rgba(15, 23, 42, .05);
+}
+
+.ag-delivery--healthy {
+    border-left-color: #10b981;
+}
+
+.ag-delivery--attention {
+    border-left-color: #f59e0b;
+}
+
+.ag-delivery--risk {
+    border-left-color: #ef4444;
+}
+
+.ag-delivery__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.ag-delivery__header h3 {
+    margin: 5px 0 7px;
+    color: #0f172a;
+    font-size: 22px;
+}
+
+.ag-delivery__header p {
+    max-width: 720px;
+    margin: 0;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.ag-delivery__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    flex: 0 0 auto;
+    padding: 11px 15px;
+    border: 1px solid #dbeafe;
+    border-radius: 11px;
+    color: #1d4ed8;
+    background: #eff6ff;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+.ag-delivery__action:hover {
+    color: #1d4ed8;
+    transform: translateY(-2px);
+    background: #dbeafe;
+}
+
+.ag-delivery__layout {
+    display: grid;
+    grid-template-columns:
+        minmax(240px, .65fr)
+        minmax(0, 1.35fr);
+    gap: 24px;
+}
+
+.ag-delivery-score {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-width: 0;
+    padding: 22px;
+    border: 1px solid #e5e7eb;
+    border-radius: 17px;
+    background: #ffffff;
+}
+
+.ag-delivery-ring {
+    --delivery-colour: #94a3b8;
+
+    position: relative;
+    width: 126px;
+    height: 126px;
+    flex: 0 0 126px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background:
+        conic-gradient(
+            var(--delivery-colour)
+            calc(var(--delivery-score) * 1%),
+            #e5e7eb 0
+        );
+}
+
+.ag-delivery-ring--healthy {
+    --delivery-colour: #10b981;
+}
+
+.ag-delivery-ring--attention {
+    --delivery-colour: #f59e0b;
+}
+
+.ag-delivery-ring--risk {
+    --delivery-colour: #ef4444;
+}
+
+.ag-delivery-ring::before {
+    content: "";
+    position: absolute;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: #ffffff;
+}
+
+.ag-delivery-ring__centre {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+
+.ag-delivery-ring__centre strong,
+.ag-delivery-ring__centre span {
+    display: block;
+}
+
+.ag-delivery-ring__centre strong {
+    color: #0f172a;
+    font-size: 31px;
+    font-weight: 850;
+}
+
+.ag-delivery-ring__centre span {
+    margin-top: -2px;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.ag-delivery-score__copy {
+    min-width: 0;
+}
+
+.ag-delivery-score__copy span,
+.ag-delivery-score__copy strong,
+.ag-delivery-score__copy small {
+    display: block;
+}
+
+.ag-delivery-score__copy span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.ag-delivery-score__copy strong {
+    margin: 3px 0;
+    color: #0f172a;
+    font-size: 21px;
+}
+
+.ag-delivery-score__copy small {
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+.ag-delivery-metrics {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    min-width: 0;
+}
+
+.ag-delivery-metric {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.ag-delivery-metric span,
+.ag-delivery-metric strong,
+.ag-delivery-metric small {
+    display: block;
+}
+
+.ag-delivery-metric span {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ag-delivery-metric strong {
+    margin: 3px 0;
+    color: #0f172a;
+    font-size: 24px;
+}
+
+.ag-delivery-metric small {
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.ag-delivery-metric--healthy {
+    border-color: #a7f3d0;
+    background: #f0fdf4;
+}
+
+.ag-delivery-metric--attention {
+    border-color: #fde68a;
+    background: #fffbeb;
+}
+
+.ag-delivery-metric--risk {
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+.ag-delivery-priority {
+    margin-top: 18px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: #ffffff;
+}
+
+.ag-delivery-priority__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 18px;
+    background: #f8fafc;
+}
+
+.ag-delivery-priority__heading span,
+.ag-delivery-priority__heading strong {
+    display: block;
+}
+
+.ag-delivery-priority__heading > div > span {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+
+.ag-delivery-priority__heading > div > strong {
+    margin-top: 3px;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.ag-delivery-priority__count {
+    min-width: 31px;
+    height: 31px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    color: #ffffff;
+    background: #2563eb;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.ag-delivery-project {
+    display: grid;
+    grid-template-columns:
+        10px minmax(0, 1fr) auto 12px;
+    align-items: center;
+    gap: 14px;
+    padding: 15px 18px;
+    border-top: 1px solid #eef2f7;
+    color: inherit;
+    text-decoration: none;
+    transition: .18s ease;
+}
+
+.ag-delivery-project:hover {
+    color: inherit;
+    background: #f8fafc;
+}
+
+.ag-delivery-project__marker {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #94a3b8;
+}
+
+.ag-delivery-project__marker--healthy {
+    background: #10b981;
+}
+
+.ag-delivery-project__marker--attention {
+    background: #f59e0b;
+}
+
+.ag-delivery-project__marker--risk {
+    background: #ef4444;
+}
+
+.ag-delivery-project__copy {
+    min-width: 0;
+}
+
+.ag-delivery-project__copy strong,
+.ag-delivery-project__copy span,
+.ag-delivery-project__status strong,
+.ag-delivery-project__status span {
+    display: block;
+}
+
+.ag-delivery-project__copy strong {
+    overflow: hidden;
+    color: #0f172a;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ag-delivery-project__copy span {
+    margin-top: 2px;
+    overflow: hidden;
+    color: #94a3b8;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ag-delivery-project__status {
+    text-align: right;
+}
+
+.ag-delivery-project__status strong {
+    color: #475569;
+    font-size: 12px;
+}
+
+.ag-delivery-project__status span {
+    margin-top: 2px;
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.ag-delivery-project > i {
+    color: #cbd5e1;
+    font-size: 10px;
+}
+
+.ag-delivery-positive {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    margin-top: 18px;
+    padding: 18px;
+    border: 1px solid #a7f3d0;
+    border-radius: 15px;
+    color: #059669;
+    background: #f0fdf4;
+}
+
+.ag-delivery-positive > i {
+    margin-top: 2px;
+    font-size: 19px;
+}
+
+.ag-delivery-positive strong {
+    color: #047857;
+}
+
+.ag-delivery-positive p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 13px;
+}
+
+
+/* Delivery Intelligence responsive */
+
+@media (max-width: 1150px) {
+
+    .ag-delivery__layout {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .ag-delivery__header {
+        flex-direction: column;
+    }
+
+    .ag-delivery__action {
+        width: 100%;
+    }
+
+    .ag-delivery-score {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .ag-delivery-metrics {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .ag-delivery-project {
+        grid-template-columns:
+            10px minmax(0, 1fr) 12px;
+    }
+
+    .ag-delivery-project__status {
+        display: none;
+    }
+
+}
+
+@media (max-width: 430px) {
+
+    .ag-delivery-metrics {
+        grid-template-columns: 1fr;
+    }
+
+}
+
    RESPONSIVE
 ================================================================ */
 
