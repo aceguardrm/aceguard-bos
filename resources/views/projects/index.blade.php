@@ -15,43 +15,27 @@
 
     /*
     |--------------------------------------------------------------------------
-    | Project Metrics
+    | Portfolio Intelligence
     |--------------------------------------------------------------------------
+    |
+    | Portfolio-wide metrics are supplied by ProjectController@index.
+    | This prevents pagination from producing misleading business metrics.
+    |
     */
 
-    $projectCollection = collect($projects->items());
+    $portfolioHealthClass = match (true) {
+        $averageDeliveryHealth >= 80 =>
+            'healthy',
 
-    $totalProjects =
-        $projects->total();
+        $averageDeliveryHealth >= 50 =>
+            'attention',
 
-    $inProgressProjects =
-        $projectCollection
-            ->where('status', 'in_progress')
-            ->count();
+        $averageDeliveryHealth > 0 =>
+            'risk',
 
-    $completedProjects =
-        $projectCollection
-            ->where('status', 'completed')
-            ->count();
-
-    $dueSoonProjects =
-        $projectCollection
-            ->filter(function ($project) {
-
-                if (
-                    !$project->due_date
-                    || $project->status === 'completed'
-                    || $project->status === 'cancelled'
-                ) {
-                    return false;
-                }
-
-                return $project->due_date->between(
-                    now()->startOfDay(),
-                    now()->addDays(7)->endOfDay()
-                );
-            })
-            ->count();
+        default =>
+            'inactive',
+    };
 
 
     /*
@@ -196,7 +180,7 @@
 
 
     {{-- ================================================================
-        PROJECT METRICS
+        PORTFOLIO INTELLIGENCE
     ================================================================ --}}
 
     <section class="ag-project-summary">
@@ -204,37 +188,9 @@
 
         <article class="ag-summary-card">
 
-            <div class="ag-summary-icon ag-summary-icon--blue">
-
-                <i class="fas fa-diagram-project"></i>
-
-            </div>
-
-
-            <div>
-
-                <span>
-                    Total Projects
-                </span>
-
-                <strong>
-                    {{ $totalProjects }}
-                </strong>
-
-                <small>
-                    Projects across all workspaces
-                </small>
-
-            </div>
-
-        </article>
-
-
-        <article class="ag-summary-card">
-
             <div class="ag-summary-icon ag-summary-icon--green">
 
-                <i class="fas fa-spinner"></i>
+                <i class="fas fa-circle-check"></i>
 
             </div>
 
@@ -242,15 +198,15 @@
             <div>
 
                 <span>
-                    In Progress
+                    Healthy
                 </span>
 
                 <strong>
-                    {{ $inProgressProjects }}
+                    {{ $healthyProjects }}
                 </strong>
 
                 <small>
-                    Work currently underway
+                    Projects delivering without material risk
                 </small>
 
             </div>
@@ -262,7 +218,7 @@
 
             <div class="ag-summary-icon ag-summary-icon--amber">
 
-                <i class="fas fa-clock"></i>
+                <i class="fas fa-triangle-exclamation"></i>
 
             </div>
 
@@ -270,15 +226,15 @@
             <div>
 
                 <span>
-                    Due Soon
+                    Attention
                 </span>
 
                 <strong>
-                    {{ $dueSoonProjects }}
+                    {{ $attentionProjects }}
                 </strong>
 
                 <small>
-                    Due within the next 7 days
+                    Projects requiring management attention
                 </small>
 
             </div>
@@ -288,9 +244,9 @@
 
         <article class="ag-summary-card">
 
-            <div class="ag-summary-icon ag-summary-icon--purple">
+            <div class="ag-summary-icon ag-summary-icon--red">
 
-                <i class="fas fa-circle-check"></i>
+                <i class="fas fa-shield-halved"></i>
 
             </div>
 
@@ -298,15 +254,53 @@
             <div>
 
                 <span>
-                    Completed
+                    At Risk
                 </span>
 
                 <strong>
-                    {{ $completedProjects }}
+                    {{ $atRiskProjects }}
                 </strong>
 
                 <small>
-                    Successfully delivered
+                    Projects with material delivery risk
+                </small>
+
+            </div>
+
+        </article>
+
+
+        <article
+            class="
+                ag-summary-card
+                ag-summary-card--health
+                ag-summary-card--{{ $portfolioHealthClass }}
+            "
+        >
+
+            <div class="ag-summary-icon ag-summary-icon--navy">
+
+                <i class="fas fa-chart-line"></i>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    Portfolio Health
+                </span>
+
+                <strong>
+                    {{ $averageDeliveryHealth }}/100
+                </strong>
+
+                <small>
+                    {{
+                        $totalProjects > 0
+                            ? $totalProjects . ' projects assessed'
+                            : 'No projects available'
+                    }}
                 </small>
 
             </div>
@@ -367,7 +361,7 @@
 
                 $isOverdue =
                     $project->due_date
-                    && $project->due_date->isPast()
+                    && $project->due_date->copy()->startOfDay()->lt(now()->startOfDay())
                     && !in_array(
                         $status,
                         [
@@ -375,6 +369,33 @@
                             'cancelled',
                         ]
                     );
+
+                $deliveryHealthKey =
+                    $project->deliveryHealthKey();
+
+                $deliveryHealthLabel =
+                    $project->deliveryHealthLabel();
+
+                $deliveryHealthScore =
+                    $project->deliveryHealthScore();
+
+                $deliveryHealthClass =
+                    match ($deliveryHealthKey) {
+                        'healthy' =>
+                            'healthy',
+
+                        'attention' =>
+                            'attention',
+
+                        'at_risk' =>
+                            'risk',
+
+                        'inactive' =>
+                            'inactive',
+
+                        default =>
+                            'neutral',
+                    };
 
             @endphp
 
@@ -425,6 +446,24 @@
                                 "
                             >
                                 {{ ucfirst($priority) }}
+                            </span>
+
+
+                            <span
+                                class="
+                                    ag-health-badge
+                                    ag-health-badge--{{
+                                        $deliveryHealthClass
+                                    }}
+                                "
+                            >
+                                <i class="fas fa-heart-pulse"></i>
+
+                                {{ $deliveryHealthLabel }}
+
+                                <strong>
+                                    {{ $deliveryHealthScore }}/100
+                                </strong>
                             </span>
 
                         </div>
@@ -874,6 +913,49 @@
 }
 
 
+.ag-summary-icon--red {
+    color: #dc2626;
+
+    background: #fee2e2;
+}
+
+
+.ag-summary-icon--navy {
+    color: #1e3a8a;
+
+    background: #dbeafe;
+}
+
+
+.ag-summary-card--health {
+    position: relative;
+
+    overflow: hidden;
+
+    border-left-width: 4px;
+}
+
+
+.ag-summary-card--healthy {
+    border-left-color: #10b981;
+}
+
+
+.ag-summary-card--attention {
+    border-left-color: #f59e0b;
+}
+
+
+.ag-summary-card--risk {
+    border-left-color: #ef4444;
+}
+
+
+.ag-summary-card--inactive {
+    border-left-color: #94a3b8;
+}
+
+
 .ag-summary-card span,
 .ag-summary-card strong,
 .ag-summary-card small {
@@ -1133,6 +1215,80 @@
     color: #1d4ed8;
 
     background: #dbeafe;
+}
+
+
+/* ================================================================
+   DELIVERY HEALTH
+================================================================ */
+
+.ag-health-badge {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 5px 9px;
+
+    border: 1px solid transparent;
+
+    border-radius: 999px;
+
+    font-size: 9px;
+    font-weight: 800;
+
+    text-transform: uppercase;
+}
+
+
+.ag-health-badge strong {
+    font-size: 9px;
+    font-weight: 900;
+}
+
+
+.ag-health-badge--healthy {
+    color: #047857;
+
+    border-color: #a7f3d0;
+
+    background: #ecfdf5;
+}
+
+
+.ag-health-badge--attention {
+    color: #92400e;
+
+    border-color: #fde68a;
+
+    background: #fffbeb;
+}
+
+
+.ag-health-badge--risk {
+    color: #991b1b;
+
+    border-color: #fecaca;
+
+    background: #fef2f2;
+}
+
+
+.ag-health-badge--inactive {
+    color: #475569;
+
+    border-color: #cbd5e1;
+
+    background: #f1f5f9;
+}
+
+
+.ag-health-badge--neutral {
+    color: #475569;
+
+    border-color: #e2e8f0;
+
+    background: #f8fafc;
 }
 
 

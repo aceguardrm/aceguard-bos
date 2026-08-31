@@ -110,8 +110,15 @@
 
 
         <a
-            href="#"
-            class="ag-navigation__item"
+            href="{{ route('projects.index') }}"
+            class="
+                ag-navigation__item
+                {{
+                    request()->routeIs('projects.*')
+                        ? 'is-active'
+                        : ''
+                }}
+            "
         >
             <i class="fas fa-diagram-project"></i>
 

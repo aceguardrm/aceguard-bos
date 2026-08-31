@@ -13,6 +13,16 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Base Portfolio Query
+        |--------------------------------------------------------------------------
+        |
+        | The same organisation filter is used for both the portfolio
+        | intelligence metrics and the paginated project register.
+        |
+        */
+
         $query = Project::with('client')
             ->latest();
 
@@ -31,15 +41,141 @@ class ProjectController extends Controller
             }
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Portfolio Intelligence
+        |--------------------------------------------------------------------------
+        |
+        | Metrics are calculated from the complete filtered portfolio,
+        | not merely the current pagination page.
+        |
+        */
+
+        $portfolioProjects = (clone $query)->get();
+
+        $totalProjects =
+            $portfolioProjects->count();
+
+        $inProgressProjects =
+            $portfolioProjects
+                ->where('status', 'in_progress')
+                ->count();
+
+        $completedProjects =
+            $portfolioProjects
+                ->where('status', 'completed')
+                ->count();
+
+        $dueSoonProjects =
+            $portfolioProjects
+                ->filter(function ($project) {
+
+                    if (
+                        !$project->due_date
+                        || in_array(
+                            $project->status,
+                            ['completed', 'cancelled']
+                        )
+                    ) {
+                        return false;
+                    }
+
+                    return $project->due_date
+                        ->copy()
+                        ->startOfDay()
+                        ->between(
+                            now()->startOfDay(),
+                            now()
+                                ->copy()
+                                ->addDays(7)
+                                ->endOfDay()
+                        );
+                })
+                ->count();
+
+        $overdueProjects =
+            $portfolioProjects
+                ->filter(
+                    fn ($project) =>
+                        $project->isProjectOverdue()
+                )
+                ->count();
+
+        $healthyProjects =
+            $portfolioProjects
+                ->filter(
+                    fn ($project) =>
+                        $project->deliveryHealthKey()
+                        === 'healthy'
+                )
+                ->count();
+
+        $attentionProjects =
+            $portfolioProjects
+                ->filter(
+                    fn ($project) =>
+                        $project->deliveryHealthKey()
+                        === 'attention'
+                )
+                ->count();
+
+        $atRiskProjects =
+            $portfolioProjects
+                ->filter(
+                    fn ($project) =>
+                        $project->deliveryHealthKey()
+                        === 'at_risk'
+                )
+                ->count();
+
+        $inactiveProjects =
+            $portfolioProjects
+                ->filter(
+                    fn ($project) =>
+                        $project->deliveryHealthKey()
+                        === 'inactive'
+                )
+                ->count();
+
+        $averageDeliveryHealth =
+            $totalProjects > 0
+                ? (int) round(
+                    $portfolioProjects
+                        ->avg(
+                            fn ($project) =>
+                                $project->deliveryHealthScore()
+                        )
+                )
+                : 0;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Paginated Project Register
+        |--------------------------------------------------------------------------
+        */
+
         $projects = $query
             ->paginate(12)
             ->withQueryString();
+
 
         return view(
             'projects.index',
             compact(
                 'projects',
-                'selectedClient'
+                'selectedClient',
+                'totalProjects',
+                'inProgressProjects',
+                'completedProjects',
+                'dueSoonProjects',
+                'overdueProjects',
+                'healthyProjects',
+                'attentionProjects',
+                'atRiskProjects',
+                'inactiveProjects',
+                'averageDeliveryHealth'
             )
         );
     }
