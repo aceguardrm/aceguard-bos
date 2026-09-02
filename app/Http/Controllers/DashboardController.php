@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\Project;
 use App\Services\BusinessHealthService;
 use App\Services\BusinessPulseService;
+use App\Services\ExecutiveActionService;
 use App\Services\SecurityScoreService;
 use Illuminate\View\View;
 
@@ -14,7 +15,8 @@ class DashboardController extends Controller
     public function index(
         BusinessHealthService $businessHealthService,
         SecurityScoreService $securityScoreService,
-        BusinessPulseService $businessPulseService
+        BusinessPulseService $businessPulseService,
+        ExecutiveActionService $executiveActionService
     ): View {
         /*
         |--------------------------------------------------------------------------
@@ -152,6 +154,13 @@ class DashboardController extends Controller
                 ->take(5)
                 ->values();
 
+        $executiveActions = $executiveActionService->build(
+            $client,
+            $portfolioProjects,
+            $security ?? [],
+            $pulse ?? []
+        );
+
 
         /*
         |--------------------------------------------------------------------------
@@ -174,6 +183,7 @@ class DashboardController extends Controller
             'dueSoonProjects' => $dueSoonProjects,
             'averageDeliveryHealth' => $averageDeliveryHealth,
             'priorityDeliveryProjects' => $priorityDeliveryProjects,
+            'executiveActions' => $executiveActions,
         ]);
     }
 }

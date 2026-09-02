@@ -193,6 +193,7 @@
                                     [$client, $control]
                                 ) }}"
                                 class="ag-control-item"
+                                id="control-{{ $control->id }}"
                             >
                                 @csrf
                                 @method('PATCH')

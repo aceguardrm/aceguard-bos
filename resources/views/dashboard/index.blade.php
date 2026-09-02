@@ -49,8 +49,12 @@
     $pulseSummary = $pulse['summary']
         ?? 'Business Pulse™ has not yet been calculated.';
 
-    $pulsePriorities = collect(
-        $pulse['priorities'] ?? []
+    $actionRegister = collect(
+        $executiveActions['actions'] ?? []
+    );
+
+    $actionDomains = collect(
+        $executiveActions['domains'] ?? []
     );
 
     /*
@@ -585,8 +589,6 @@
 
 
     {{-- ================================================================
-
-    {{-- ================================================================
         PROJECT DELIVERY INTELLIGENCE
     ================================================================ --}}
 
@@ -866,15 +868,15 @@
 
             <div>
                 <span>
-                    Executive Priorities
+                    Executive Actions
                 </span>
 
                 <strong>
-                    {{ $pulse['priority_count'] ?? 0 }}
+                    {{ $executiveActions['total'] ?? 0 }}
                 </strong>
 
                 <small>
-                    Items requiring attention
+                    Ranked actions requiring attention
                 </small>
             </div>
 
@@ -890,7 +892,7 @@
     <section class="ag-lower-grid">
 
 
-        {{-- Today's Priorities --}}
+        {{-- Executive Action Centre --}}
 
         <article class="ag-card">
 
@@ -898,28 +900,55 @@
 
                 <div>
                     <span class="ag-kicker ag-kicker--dark">
-                        Executive Intelligence
+                        BOS Executive Actions
                     </span>
 
                     <h3>
-                        Today's Priorities
+                        Management Action Centre
                     </h3>
                 </div>
 
                 <span class="ag-priority-count">
-                    {{ $pulsePriorities->count() }}
+                    {{ $actionRegister->count() }}
                 </span>
 
             </div>
 
 
-            <div class="ag-priority-list">
+            <p class="ag-action-intro">
+                Ranked by urgency and impact, with a direct route to resolve
+                every issue.
+            </p>
 
-                @forelse($pulsePriorities as $priority)
+            <div class="ag-action-filters" aria-label="Filter executive actions">
+                <button
+                    type="button"
+                    class="ag-action-filter is-active"
+                    data-action-filter="all"
+                >
+                    All
+                    <span>{{ $actionRegister->count() }}</span>
+                </button>
+
+                @foreach($actionDomains as $domain)
+                    <button
+                        type="button"
+                        class="ag-action-filter"
+                        data-action-filter="{{ $domain['key'] }}"
+                    >
+                        {{ $domain['label'] }}
+                        <span>{{ $domain['count'] }}</span>
+                    </button>
+                @endforeach
+            </div>
+
+            <div class="ag-priority-list" id="executive-action-list">
+
+                @forelse($actionRegister as $action)
 
                     @php
                         $severity =
-                            $priority['severity']
+                            $action['severity']
                             ?? 'low';
 
                         $severityClass =
@@ -939,7 +968,10 @@
                     @endphp
 
 
-                    <div class="ag-priority-item">
+                    <article
+                        class="ag-priority-item ag-executive-action"
+                        data-action-domain="{{ $action['domain'] }}"
+                    >
 
                         <div
                             class="
@@ -958,7 +990,7 @@
                             >
 
                                 <strong>
-                                    {{ $priority['title'] }}
+                                    {{ $action['title'] }}
                                 </strong>
 
                                 <span
@@ -974,25 +1006,26 @@
 
 
                             <p>
-                                {{ $priority['message'] }}
+                                {{ $action['reason'] }}
                             </p>
 
-                        </div>
-
-
-                        <div class="ag-priority-impact">
-
-                            <strong>
-                                +{{ $priority['impact'] ?? 0 }}
-                            </strong>
-
-                            <span>
-                                impact
+                            <span class="ag-action-impact">
+                                <i class="fas fa-chart-line"></i>
+                                {{ $action['impact'] }}
                             </span>
 
                         </div>
 
-                    </div>
+
+                        <a
+                            href="{{ $action['actionUrl'] }}"
+                            class="ag-action-button"
+                        >
+                            {{ $action['actionLabel'] }}
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+
+                    </article>
 
 
                 @empty
@@ -1004,13 +1037,12 @@
                         <div>
 
                             <strong>
-                                No immediate priorities
+                                No executive actions required
                             </strong>
 
                             <p>
-                                Business Pulse™ has detected no
-                                current issues requiring management
-                                attention.
+                                Projects, cyber security, Business Health and
+                                Microsoft 365 are currently within BOS thresholds.
                             </p>
 
                         </div>
@@ -1180,12 +1212,12 @@
                         </strong>
 
                         <p>
-                            {{ $pulse['priority_count'] ?? 0 }}
+                            {{ $executiveActions['total'] ?? 0 }}
 
                             priority
 
                             {{
-                                ($pulse['priority_count'] ?? 0)
+                                ($executiveActions['total'] ?? 0)
                                     === 1
                                     ? 'item requires'
                                     : 'items require'
@@ -1862,6 +1894,54 @@
    PRIORITIES
 ================================================================ */
 
+.ag-action-intro {
+    margin: -4px 0 16px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.ag-action-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.ag-action-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    color: #475569;
+    background: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.ag-action-filter span {
+    min-width: 20px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    text-align: center;
+}
+
+.ag-action-filter:hover,
+.ag-action-filter.is-active {
+    border-color: #93c5fd;
+    color: #1d4ed8;
+    background: #eff6ff;
+}
+
+.ag-executive-action[hidden] {
+    display: none;
+}
+
 .ag-priority-count {
     width: 31px;
     height: 31px;
@@ -1911,6 +1991,20 @@
     margin: 5px 0 0;
     color: #64748b;
     font-size: 13px;
+}
+
+.ag-action-impact {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.ag-action-impact i {
+    color: #2563eb;
 }
 
 .ag-severity-badge {
@@ -1965,6 +2059,29 @@
 .ag-priority-impact strong,
 .ag-priority-impact span {
     display: block;
+}
+
+.ag-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 132px;
+    padding: 10px 12px;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    color: #1d4ed8;
+    background: #eff6ff;
+    font-size: 11px;
+    font-weight: 850;
+    text-decoration: none;
+    transition: .18s ease;
+}
+
+.ag-action-button:hover {
+    color: #ffffff;
+    background: #2563eb;
+    transform: translateY(-1px);
 }
 
 .ag-priority-impact strong {
@@ -2063,8 +2180,6 @@
     line-height: 1.5;
 }
 
-
-/* ================================================================
 
 /* ================================================================
    PROJECT DELIVERY INTELLIGENCE
@@ -2517,6 +2632,7 @@
 
 }
 
+/* ================================================================
    RESPONSIVE
 ================================================================ */
 
@@ -2583,8 +2699,35 @@
         text-align: left;
     }
 
+    .ag-action-button {
+        grid-column: 2;
+        width: 100%;
+    }
+
 }
 
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const filters = document.querySelectorAll('[data-action-filter]');
+    const actions = document.querySelectorAll('[data-action-domain]');
+
+    filters.forEach(function (filter) {
+        filter.addEventListener('click', function () {
+            const selected = filter.dataset.actionFilter;
+
+            filters.forEach(function (item) {
+                item.classList.toggle('is-active', item === filter);
+            });
+
+            actions.forEach(function (action) {
+                action.hidden = selected !== 'all'
+                    && action.dataset.actionDomain !== selected;
+            });
+        });
+    });
+});
+</script>
 
 @endsection
