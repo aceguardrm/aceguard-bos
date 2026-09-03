@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SecurityWorkspaceController;
@@ -11,6 +12,16 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Public AceGuard Appointment Scheduler
+|--------------------------------------------------------------------------
+*/
+Route::get('/book', [BookingController::class, 'index'])->name('booking.index');
+Route::get('/book/slots', [BookingController::class, 'slots'])->name('booking.slots');
+Route::post('/book', [BookingController::class, 'store'])->middleware('throttle:10,1')->name('booking.store');
+Route::get('/book/confirmed/{reference}', [BookingController::class, 'confirmed'])->name('booking.confirmed');
 
 Route::get('/dashboard', function () {
     $client = Client::first();
