@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,9 +26,33 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->post('/forgot-password', ['email' => $user->email]);
+        $response = $this->post('/forgot-password', ['email' => $user->email]);
 
         Notification::assertSentTo($user, ResetPassword::class);
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas(
+                'status',
+                PasswordResetLinkController::RESET_LINK_RESPONSE
+            );
+    }
+
+    public function test_password_reset_request_does_not_disclose_unknown_email(): void
+    {
+        Notification::fake();
+
+        $response = $this->post('/forgot-password', [
+            'email' => 'unknown@example.com',
+        ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas(
+                'status',
+                PasswordResetLinkController::RESET_LINK_RESPONSE
+            );
+
+        Notification::assertNothingSent();
     }
 
     public function test_reset_password_screen_can_be_rendered(): void
