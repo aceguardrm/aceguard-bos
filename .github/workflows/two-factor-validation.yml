@@ -1,0 +1,40 @@
+name: Two-factor validation
+on:
+  push:
+    branches: [feature/two-factor-authentication]
+  pull_request:
+    branches: [release/v0.2.0]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ":memory:"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, xml, sqlite3, pdo_sqlite
+          coverage: none
+      - name: Resolve new authentication dependency
+        run: composer update laravel/fortify --with-dependencies --no-interaction --prefer-dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: composer-lock
+          path: composer.lock
+      - name: Configure isolated test environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+      - name: Run tests and verify cached routes and views
+        run: |
+          php artisan optimize:clear
+          composer test
+          php artisan route:cache
+          php artisan view:cache
