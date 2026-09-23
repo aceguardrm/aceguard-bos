@@ -22,12 +22,15 @@ jobs:
           php-version: '8.5'
           extensions: mbstring, xml, sqlite3, pdo_sqlite
           coverage: none
-      - name: Resolve new authentication dependency
-        run: composer update laravel/fortify --with-dependencies --no-interaction --prefer-dist
-      - uses: actions/upload-artifact@v4
+      - name: Install locked PHP dependencies
+        run: composer install --no-interaction --prefer-dist
+      - uses: actions/setup-node@v4
         with:
-          name: composer-lock
-          path: composer.lock
+          node-version: '22'
+      - name: Build frontend assets
+        run: |
+          npm ci
+          npm run build
       - name: Configure isolated test environment
         run: |
           cp .env.example .env
