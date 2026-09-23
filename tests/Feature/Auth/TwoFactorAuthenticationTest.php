@@ -100,4 +100,37 @@ class TwoFactorAuthenticationTest extends TestCase
         $this->post('/two-factor-challenge', ['code' => '000000'])->assertStatus(429);
         $this->assertGuest();
     }
+
+    public function test_real_authenticator_code_confirms_setup_and_pending_screen_renders(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user)->withSession(['auth.password_confirmed_at' => time()])
+            ->post('/user/two-factor-authentication')->assertRedirect();
+        $this->get('/account/security')->assertOk()->assertSee('Confirm and enable');
+        $secret = decrypt($user->fresh()->two_factor_secret);
+        $code = (new \PragmaRX\Google2FA\Google2FA)->getCurrentOtp($secret);
+        $this->post('/user/confirmed-two-factor-authentication', ['code' => $code])->assertRedirect();
+        $this->assertNotNull($user->fresh()->two_factor_confirmed_at);
+    }
+
+    public function test_replacing_codes_invalidates_old_codes_and_disable_clears_secrets(): void
+    {
+        $user = $this->enrolledUser();
+        $this->actingAs($user)->withSession(['auth.password_confirmed_at' => time()])
+            ->post('/user/two-factor-recovery-codes')->assertRedirect();
+        $this->assertNotContains('recovery-code-one', $user->fresh()->recoveryCodes());
+        $this->delete('/user/two-factor-authentication')->assertRedirect();
+        $this->assertNull($user->fresh()->two_factor_secret);
+        $this->assertNull($user->fresh()->two_factor_recovery_codes);
+        $this->assertNull($user->fresh()->two_factor_confirmed_at);
+    }
+
+    public function test_challenge_screen_renders_for_pending_login(): void
+    {
+        $user = $this->enrolledUser();
+        $this->withSession(['login.id' => $user->id])->get('/two-factor-challenge')
+            ->assertOk()->assertSee('Verify your sign-in');
+        $this->assertGuest();
+    }
+
 }
