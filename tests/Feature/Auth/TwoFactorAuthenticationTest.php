@@ -133,4 +133,24 @@ class TwoFactorAuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+
+    public function test_stale_concurrent_recovery_attempt_cannot_consume_the_same_code(): void
+    {
+        $user = $this->enrolledUser();
+        $first = $user->fresh();
+        $second = $user->fresh();
+        $first->replaceRecoveryCode('recovery-code-one');
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $second->replaceRecoveryCode('recovery-code-one');
+    }
+
+    public function test_remember_me_does_not_skip_the_second_factor(): void
+    {
+        $user = $this->enrolledUser();
+        $this->post('/login', ['email' => $user->email, 'password' => 'password', 'remember' => true])
+            ->assertRedirect('/two-factor-challenge');
+        $this->assertGuest();
+        $this->assertSame($user->remember_token, $user->fresh()->remember_token);
+    }
+
 }
