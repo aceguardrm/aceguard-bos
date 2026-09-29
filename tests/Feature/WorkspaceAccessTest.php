@@ -174,6 +174,7 @@ class WorkspaceAccessTest extends TestCase
         $this->get('/clients/'.$client->id.'/security')->assertOk()->assertSee('disabled', false);
         $this->get('/clients/'.$client->id.'/business-pulse')->assertOk()->assertSee('disabled', false);
         $this->get('/clients')->assertOk()->assertDontSee(route('clients.create'), false);
+        $this->assertDatabaseCount('business_pulse_assessments', 0);
     }
 
     public function test_operator_can_assign_and_revoke_a_workspace_role(): void
