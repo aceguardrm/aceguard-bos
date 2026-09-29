@@ -16,6 +16,7 @@
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="max-w-xl">
                     @include('profile.partials.update-password-form')
+                    <a href="{{ route('two-factor.settings') }}" class="block mt-6 underline text-sm">Manage two-factor authentication</a>
                 </div>
             </div>
 
