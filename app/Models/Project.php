@@ -11,6 +11,11 @@ class Project extends Model
 {
     use HasFactory;
 
+    public function scopeVisibleTo($query, User $user)
+    {
+        return $query->whereHas('client', fn ($clients) => $clients->visibleTo($user));
+    }
+
     protected $fillable = [
         'client_id',
         'name',

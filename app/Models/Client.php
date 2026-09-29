@@ -8,6 +8,18 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Client extends Model
 {
+    public function members(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(User::class)->withPivot('role')->withTimestamps();
+    }
+
+    public function scopeVisibleTo($query, User $user)
+    {
+        return $user->is_platform_admin ? $query : $query->whereHas('members',
+            fn ($members) => $members->where('users.id', $user->id)
+                ->whereIn('client_user.role', ['administrator', 'editor', 'viewer']));
+    }
+
     protected $fillable = [
         'company_name',
         'contact_name',
