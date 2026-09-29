@@ -11,7 +11,7 @@ class ClientController extends Controller
 {
     public function index()
     {
-        $clients = Client::latest()->paginate(10);
+        $clients = Client::visibleTo(auth()->user())->latest()->paginate(10);
 
         return view(
             'clients.index',

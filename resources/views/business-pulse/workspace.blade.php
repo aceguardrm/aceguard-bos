@@ -383,6 +383,7 @@
         method="POST"
         action="{{ route('business-pulse.update', $client) }}"
     >
+<fieldset style="display: contents" @disabled(!auth()->user()->canAccessWorkspace($client, 'edit'))>
 
         @csrf
         @method('PATCH')
@@ -673,7 +674,8 @@
 
         </section>
 
-    </form>
+    </fieldset>
+</form>
 
 
     {{-- ================================================================

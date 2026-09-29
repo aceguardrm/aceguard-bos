@@ -193,7 +193,8 @@
                                     [$client, $control]
                                 ) }}"
                                 class="ag-control-item"
-                                id="control-{{ $control->id }}"
+                                id="control-{{ $control->
+<fieldset style="display: contents" @disabled(!auth()->user()->canAccessWorkspace($client, 'edit'))>id }}"
                             >
                                 @csrf
                                 @method('PATCH')
@@ -278,7 +279,8 @@
                                     <span>points</span>
                                 </div>
 
-                            </form>
+                            </fieldset>
+</form>
 
                         @endforeach
 

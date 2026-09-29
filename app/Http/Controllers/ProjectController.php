@@ -23,13 +23,13 @@ class ProjectController extends Controller
         |
         */
 
-        $query = Project::with('client')
+        $query = Project::visibleTo(auth()->user())->with('client')
             ->latest();
 
         $selectedClient = null;
 
         if ($request->filled('client')) {
-            $selectedClient = Client::find(
+            $selectedClient = Client::visibleTo(auth()->user())->findOrFail(
                 $request->integer('client')
             );
 
@@ -186,13 +186,13 @@ class ProjectController extends Controller
      */
     public function create(Request $request)
     {
-        $clients = Client::orderBy('company_name')
+        $clients = Client::visibleTo(auth()->user())->orderBy('company_name')
             ->get();
 
         $selectedClient = null;
 
         if ($request->filled('client')) {
-            $selectedClient = Client::find(
+            $selectedClient = Client::visibleTo(auth()->user())->findOrFail(
                 $request->integer('client')
             );
         }
@@ -291,7 +291,7 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        $clients = Client::orderBy('company_name')
+        $clients = Client::visibleTo(auth()->user())->orderBy('company_name')
             ->get();
 
         return view(

@@ -99,6 +99,7 @@ class ExecutiveActionsTest extends TestCase
     {
         $user = User::factory()->create();
         $client = $this->createClient();
+        $client->members()->attach($user, ['role' => 'viewer']);
 
         $control = SecurityControl::create([
             'client_id' => $client->id,

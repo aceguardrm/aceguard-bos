@@ -36,13 +36,15 @@
 
         </div>
 
-        <a
+        @if(auth()->user()->is_platform_admin)
+<a
             href="{{ route('clients.create') }}"
             class="ag-button ag-button--light"
         >
             <i class="fas fa-plus"></i>
             New Workspace
         </a>
+@endif
 
     </section>
 
@@ -426,16 +428,19 @@
 
                 <div class="ag-workspace-actions">
 
-                    <a
+                    @if(auth()->user()->canAccessWorkspace($client, 'admin'))
+<a
                         href="{{ route('clients.edit', $client) }}"
                         class="ag-action-button"
                     >
                         <i class="fas fa-pen"></i>
                         Edit
                     </a>
+@endif
 
 
-                    <form
+                    @if(auth()->user()->is_platform_admin)
+<form
                         action="{{ route('clients.destroy', $client) }}"
                         method="POST"
                         onsubmit="
@@ -461,6 +466,7 @@
                         </button>
 
                     </form>
+@endif
 
                 </div>
 
@@ -485,13 +491,15 @@
                     and the Cyber Centre.
                 </p>
 
-                <a
+                @if(auth()->user()->is_platform_admin)
+<a
                     href="{{ route('clients.create') }}"
                     class="ag-button ag-button--primary"
                 >
                     <i class="fas fa-plus"></i>
                     Create First Workspace
                 </a>
+@endif
 
             </div>
 

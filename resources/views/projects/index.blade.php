@@ -148,7 +148,8 @@
         </div>
 
 
-        <a
+        @if(auth()->user()->is_platform_admin || auth()->user()->workspaces()->wherePivotIn('role', ['administrator', 'editor'])->exists())
+<a
             href="{{ route('projects.create') }}"
             class="ag-button ag-button--light"
         >
@@ -156,6 +157,7 @@
 
             New Project
         </a>
+@endif
 
     </section>
 
@@ -606,7 +608,8 @@
                     </a>
 
 
-                    <a
+                    @if(auth()->user()->canAccessWorkspace($project->client, 'edit'))
+<a
                         href="{{ route('projects.edit', $project) }}"
                         class="ag-action"
                     >
@@ -614,6 +617,7 @@
 
                         Edit
                     </a>
+@endif
 
                 </div>
 
@@ -642,7 +646,8 @@
                 </p>
 
 
-                <a
+                @if(auth()->user()->is_platform_admin || auth()->user()->workspaces()->wherePivotIn('role', ['administrator', 'editor'])->exists())
+<a
                     href="{{ route('projects.create') }}"
                     class="
                         ag-button
@@ -653,6 +658,7 @@
 
                     Create First Project
                 </a>
+@endif
 
             </div>
 

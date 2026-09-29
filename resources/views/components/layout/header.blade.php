@@ -23,7 +23,7 @@
 
             <div>
                 <strong>{{ Auth::user()->name ?? 'User' }}</strong>
-                <span>Administrator</span>
+                <span>{{ auth()->user()->is_platform_admin ? 'Platform administrator' : 'Workspace member' }}</span>
             </div>
         </div>
 
