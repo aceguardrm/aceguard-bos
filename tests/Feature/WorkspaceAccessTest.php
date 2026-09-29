@@ -165,6 +165,17 @@ class WorkspaceAccessTest extends TestCase
         $this->assertFalse($user->fresh()->is_platform_admin);
     }
 
+    public function test_read_only_security_and_assessment_pages_render_without_write_controls(): void
+    {
+        $client = $this->workspace('Own');
+        SecurityControl::create(['client_id' => $client->id, 'category' => 'Backup',
+            'control' => 'Backup control', 'enabled' => false, 'points' => 0, 'maximum_points' => 10]);
+        $this->actingAs($this->member($client, 'viewer'));
+        $this->get('/clients/'.$client->id.'/security')->assertOk()->assertSee('disabled', false);
+        $this->get('/clients/'.$client->id.'/business-pulse')->assertOk()->assertSee('disabled', false);
+        $this->get('/clients')->assertOk()->assertDontSee(route('clients.create'), false);
+    }
+
     public function test_operator_can_assign_and_revoke_a_workspace_role(): void
     {
         $client = $this->workspace('Own');

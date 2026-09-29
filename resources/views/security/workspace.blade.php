@@ -193,9 +193,9 @@
                                     [$client, $control]
                                 ) }}"
                                 class="ag-control-item"
-                                id="control-{{ $control->
-<fieldset style="display: contents" @disabled(!auth()->user()->canAccessWorkspace($client, 'edit'))>id }}"
+                                id="control-{{ $control->id }}"
                             >
+<fieldset style="display: contents" @disabled(!auth()->user()->canAccessWorkspace($client, 'edit'))>
                                 @csrf
                                 @method('PATCH')
 
