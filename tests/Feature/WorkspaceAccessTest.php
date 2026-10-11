@@ -13,6 +13,24 @@ class WorkspaceAccessTest extends TestCase
 {
     use RefreshDatabase;
 
+
+    public function test_workspace_administrator_edit_form_renders_existing_details(): void
+    {
+        $client = $this->workspace('EditableCompany');
+        $this->actingAs($this->member($client, 'administrator'));
+
+        $this->get('/clients/'.$client->id.'/edit')
+            ->assertOk()
+            ->assertViewIs('clients.edit')
+            ->assertSee('AceGuard BOS')
+            ->assertSee('Edit Workspace')
+            ->assertSee('value="EditableCompany"', false)
+            ->assertSee('value="editablecompany@example.test"', false)
+            ->assertSee('name="_token"', false)
+            ->assertSee('name="_method" value="PUT"', false)
+            ->assertSee('Save Workspace');
+    }
+
     private function workspace(string $name): Client
     {
         return Client::create(['company_name' => $name, 'contact_name' => 'Contact',
