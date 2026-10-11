@@ -27,9 +27,33 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'is_platform_admin' => 'boolean',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    public function workspaces(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Client::class)->withPivot('role')->withTimestamps();
+    }
+
+    public function workspaceRole(Client $client): ?string
+    {
+        return $this->workspaces()->whereKey($client->id)->first()?->pivot->role;
+    }
+
+    public function canAccessWorkspace(Client $client, string $level = 'view'): bool
+    {
+        if ($this->is_platform_admin) {
+            return true;
+        }
+        $roles = match ($level) {
+            'admin' => ['administrator'],
+            'edit' => ['administrator', 'editor'],
+            default => ['administrator', 'editor', 'viewer'],
+        };
+        return in_array($this->workspaceRole($client), $roles, true);
     }
 
     /** Consume a recovery code only if its encrypted list has not changed. */

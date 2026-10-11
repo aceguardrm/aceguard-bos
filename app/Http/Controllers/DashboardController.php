@@ -24,7 +24,7 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $client = Client::first();
+        $client = Client::visibleTo(auth()->user())->orderBy("id")->first();
 
         $health = null;
         $security = null;
@@ -50,7 +50,7 @@ class DashboardController extends Controller
         |
         */
 
-        $portfolioProjects = Project::with('tasks')
+        $portfolioProjects = Project::visibleTo(auth()->user())->with('tasks')
             ->latest()
             ->get();
 

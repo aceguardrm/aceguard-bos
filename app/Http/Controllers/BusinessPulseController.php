@@ -24,7 +24,7 @@ class BusinessPulseController extends Controller
         if (! $assessment) {
             $assessment = $client
                 ->businessPulseAssessment()
-                ->create([
+                ->make([
                     'operations_score' => 0,
                     'continuity_score' => 0,
                     'documentation_score' => 0,

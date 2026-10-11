@@ -27,6 +27,7 @@ Route::redirect('/', '/dashboard')->name('home');
 Route::middleware([
     'auth',
     'verified',
+    \App\Http\Middleware\AuthorizeWorkspace::class,
 ])->group(function () {
 
     /*
@@ -49,7 +50,7 @@ Route::middleware([
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\AuthorizeWorkspace::class])->group(function () {
 
     /*
     |--------------------------------------------------------------------------

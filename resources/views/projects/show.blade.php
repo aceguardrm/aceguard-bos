@@ -155,7 +155,8 @@
 
         <div class="ag-project-hero-actions">
 
-            <a
+            @if(auth()->user()->canAccessWorkspace($project->client, 'edit'))
+<a
                 href="{{ route('projects.edit', $project) }}"
                 class="
                     ag-project-button
@@ -166,6 +167,7 @@
 
                 Edit Project
             </a>
+@endif
 
             <a
                 href="{{ route('projects.index') }}"
@@ -642,7 +644,8 @@
 
                         <div class="ag-task-card-main">
 
-                            <form
+                            @if(auth()->user()->canAccessWorkspace($project->client, 'edit'))
+<form
                                 method="POST"
                                 action="{{ route('project-tasks.toggle', [$project, $task]) }}"
                                 class="ag-task-toggle-form"
@@ -658,6 +661,7 @@
                                     <i class="fas {{ $task->status === 'completed' ? 'fa-check' : 'fa-circle' }}"></i>
                                 </button>
                             </form>
+@endif
 
 
                             <div class="ag-task-card-content">
@@ -739,7 +743,8 @@
                                     Edit
                                 </summary>
 
-                                <form
+                                @if(auth()->user()->canAccessWorkspace($project->client, 'edit'))
+<form
                                     method="POST"
                                     action="{{ route('project-tasks.update', [$project, $task]) }}"
                                     class="ag-task-edit-form"
@@ -875,11 +880,13 @@
                                     </button>
 
                                 </form>
+@endif
 
                             </details>
 
 
-                            <form
+                            @if(auth()->user()->canAccessWorkspace($project->client, 'edit'))
+<form
                                 method="POST"
                                 action="{{ route('project-tasks.destroy', [$project, $task]) }}"
                                 onsubmit="return confirm('Are you sure you want to permanently delete this task?');"
@@ -895,6 +902,7 @@
                                     Delete
                                 </button>
                             </form>
+@endif
 
                         </div>
 
@@ -934,7 +942,8 @@
                 </div>
 
 
-                <form
+                @if(auth()->user()->canAccessWorkspace($project->client, 'edit'))
+<form
                     method="POST"
                     action="{{ route('project-tasks.store', $project) }}"
                     class="ag-task-create-form"
@@ -1058,6 +1067,7 @@
                     </button>
 
                 </form>
+@endif
 
             </aside>
 
@@ -1424,7 +1434,8 @@
 
         <div class="ag-project-admin-actions">
 
-            <a
+            @if(auth()->user()->canAccessWorkspace($project->client, 'edit'))
+<a
                 href="{{ route('projects.edit', $project) }}"
                 class="ag-project-admin-button"
             >
@@ -1432,9 +1443,11 @@
 
                 Edit Project
             </a>
+@endif
 
 
-            <form
+            @if(auth()->user()->canAccessWorkspace($project->client, 'edit'))
+<form
                 method="POST"
                 action="{{ route('projects.destroy', $project) }}"
                 onsubmit="
@@ -1461,6 +1474,7 @@
                 </button>
 
             </form>
+@endif
 
         </div>
 

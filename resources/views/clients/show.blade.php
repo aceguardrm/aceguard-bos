@@ -167,7 +167,8 @@
 
         <div class="ag-hero-actions">
 
-            <a
+            @if(auth()->user()->canAccessWorkspace($client, 'admin'))
+<a
                 href="{{ route('clients.edit', $client) }}"
                 class="ag-hero-button ag-hero-button--secondary"
             >
@@ -175,6 +176,7 @@
 
                 Edit Workspace
             </a>
+@endif
 
 
             <a

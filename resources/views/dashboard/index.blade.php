@@ -12,7 +12,7 @@
 @section('content')
 
 @php
-    $clientCount = \App\Models\Client::count();
+    $clientCount = \App\Models\Client::visibleTo(auth()->user())->count();
 
     /*
     |--------------------------------------------------------------------------
@@ -163,13 +163,15 @@
             </p>
         </div>
 
-        <a
+        @if(auth()->user()->is_platform_admin)
+<a
             href="{{ route('clients.create') }}"
             class="ag-button ag-button--light"
         >
             <i class="fas fa-plus"></i>
             New Workspace
         </a>
+@endif
 
     </section>
 

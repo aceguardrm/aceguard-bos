@@ -1,7 +1,7 @@
-name: Two-factor validation
+name: BOS validation
 on:
   push:
-    branches: [feature/two-factor-authentication]
+    branches: [feature/two-factor-authentication, feature/workspace-access]
   pull_request:
     branches: [release/v0.2.0]
   workflow_dispatch:
