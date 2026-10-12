@@ -176,6 +176,12 @@
 
                 Edit Workspace
             </a>
+            <a
+                href="{{ route('clients.members.index', $client) }}"
+                class="ag-hero-button ag-hero-button--secondary"
+            >
+                Manage members
+            </a>
 @endif
 
 

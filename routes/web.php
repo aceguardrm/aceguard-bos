@@ -160,4 +160,43 @@ Route::middleware(['auth', \App\Http\Middleware\AuthorizeWorkspace::class])->gro
 
 });
 
+
+Route::middleware(['auth', \App\Http\Middleware\AuthorizeWorkspace::class])
+    ->group(function () {
+        Route::get('/clients/{client}/members',
+            [\App\Http\Controllers\WorkspaceMemberController::class, 'index'])
+            ->name('clients.members.index');
+
+        Route::patch('/clients/{client}/members/{member}',
+            [\App\Http\Controllers\WorkspaceMemberController::class, 'update'])
+            ->name('clients.members.update');
+
+        Route::delete('/clients/{client}/members/{member}',
+            [\App\Http\Controllers\WorkspaceMemberController::class, 'destroy'])
+            ->name('clients.members.destroy');
+    });
+
+
+Route::middleware(['auth', \App\Http\Middleware\AuthorizeWorkspace::class])
+    ->group(function () {
+        Route::post('/clients/{client}/invitations',
+            [\App\Http\Controllers\WorkspaceInvitationController::class, 'store'])
+            ->middleware('throttle:10,1')
+            ->name('clients.invitations.store');
+
+        Route::delete('/clients/{client}/invitations/{invitation}',
+            [\App\Http\Controllers\WorkspaceInvitationController::class, 'destroy'])
+            ->name('clients.invitations.destroy');
+    });
+
+Route::get('/workspace-invitations/{token}',
+    [\App\Http\Controllers\WorkspaceInvitationAcceptanceController::class, 'show'])
+    ->middleware('throttle:30,1')
+    ->name('workspace-invitations.show');
+
+Route::post('/workspace-invitations/{token}',
+    [\App\Http\Controllers\WorkspaceInvitationAcceptanceController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('workspace-invitations.accept');
+
 require __DIR__.'/auth.php';
