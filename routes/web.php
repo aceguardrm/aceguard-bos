@@ -199,4 +199,12 @@ Route::post('/workspace-invitations/{token}',
     ->middleware('throttle:10,1')
     ->name('workspace-invitations.accept');
 
+
+Route::middleware(['auth', \App\Http\Middleware\AuthorizeWorkspace::class])
+    ->group(function () {
+        Route::get('/clients/{client}/access-history',
+            [\App\Http\Controllers\AccessAuditController::class, 'index'])
+            ->name('clients.access-history.index');
+    });
+
 require __DIR__.'/auth.php';

@@ -46,13 +46,26 @@ class WorkspaceInvitationController extends Controller
                 ]);
             }
 
-            WorkspaceInvitation::where('client_id', $locked->id)
+            $previousInvitations = WorkspaceInvitation::where('client_id', $locked->id)
                 ->where('email', $validated['email'])
                 ->whereNull('accepted_at')
                 ->whereNull('revoked_at')
-                ->update(['revoked_at' => now()]);
+                ->lockForUpdate()->get();
 
-            return WorkspaceInvitation::create([
+            foreach ($previousInvitations as $previous) {
+                $previous->update(['revoked_at' => now()]);
+                \App\Models\AccessAuditEvent::create([
+                    'client_id' => $locked->id,
+                    'actor_id' => $request->user()->id,
+                    'invitation_id' => $previous->id,
+                    'source' => 'web',
+                    'action' => 'invitation.replaced',
+                    'previous_role' => $previous->role,
+                    'created_at' => now(),
+                ]);
+            }
+
+            $created = WorkspaceInvitation::create([
                 'client_id' => $locked->id,
                 'invited_by' => $request->user()->id,
                 'email' => $validated['email'],
@@ -60,6 +73,18 @@ class WorkspaceInvitationController extends Controller
                 'token_hash' => hash('sha256', $token),
                 'expires_at' => now()->addDays(7),
             ]);
+
+            \App\Models\AccessAuditEvent::create([
+                'client_id' => $locked->id,
+                'actor_id' => $request->user()->id,
+                'invitation_id' => $created->id,
+                'source' => 'web',
+                'action' => 'invitation.created',
+                'new_role' => $created->role,
+                'created_at' => now(),
+            ]);
+
+            return $created;
         });
 
         try {
@@ -71,7 +96,24 @@ class WorkspaceInvitationController extends Controller
                 )
             );
         } catch (\Throwable $error) {
-            $invitation->update(['revoked_at' => now()]);
+            DB::transaction(function () use ($request, $client, $invitation) {
+                Client::whereKey($client->id)->lockForUpdate()->firstOrFail();
+                $pending = WorkspaceInvitation::whereKey($invitation->id)
+                    ->lockForUpdate()->firstOrFail();
+
+                if ($pending->accepted_at === null && $pending->revoked_at === null) {
+                    $pending->update(['revoked_at' => now()]);
+                    \App\Models\AccessAuditEvent::create([
+                        'client_id' => $client->id,
+                        'actor_id' => $request->user()->id,
+                        'invitation_id' => $pending->id,
+                        'source' => 'web',
+                        'action' => 'invitation.delivery_failed',
+                        'previous_role' => $pending->role,
+                        'created_at' => now(),
+                    ]);
+                }
+            });
             // Do not log the invitation URL or mailbox credentials.
             throw ValidationException::withMessages([
                 'email' => 'The invitation could not be sent. Please try again.',
@@ -94,11 +136,22 @@ class WorkspaceInvitationController extends Controller
             $locked = Client::whereKey($client->id)->lockForUpdate()->firstOrFail();
             $this->authorizeAdministrator($request, $locked);
 
-            WorkspaceInvitation::whereKey($invitation->id)
+            $pending = WorkspaceInvitation::whereKey($invitation->id)
                 ->where('client_id', $locked->id)
-                ->whereNull('accepted_at')
-                ->whereNull('revoked_at')
-                ->update(['revoked_at' => now()]);
+                ->lockForUpdate()->firstOrFail();
+
+            if ($pending->accepted_at === null && $pending->revoked_at === null) {
+                $pending->update(['revoked_at' => now()]);
+                \App\Models\AccessAuditEvent::create([
+                    'client_id' => $locked->id,
+                    'actor_id' => $request->user()->id,
+                    'invitation_id' => $pending->id,
+                    'source' => 'web',
+                    'action' => 'invitation.cancelled',
+                    'previous_role' => $pending->role,
+                    'created_at' => now(),
+                ]);
+            }
         });
 
         return redirect()->route('clients.members.index', $client)

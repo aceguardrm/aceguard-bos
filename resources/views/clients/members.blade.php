@@ -31,6 +31,10 @@
 @section('content')
 <div class="ag-members-card">
 <a href="{{ route('clients.show', $client) }}">Back to workspace</a>
+<p>
+<a href="{{ route('clients.access-history.index', $client) }}">Access history</a>
+</p>
+
 
 @if (session('success'))
 <p class="ag-members-success" role="status">{{ session('success') }}</p>

@@ -104,12 +104,38 @@ class WorkspaceInvitationAcceptanceController extends Controller
                 ]);
             }
 
-            // An old invitation must not overwrite a subsequently assigned role.
-            if (!$client->members()->whereKey($user->id)->exists()) {
+            // Preserve any membership assigned after the invitation was issued.
+            $membership = $client->members()->whereKey($user->id)->first();
+            $previousRole = $membership?->pivot->role;
+
+            if (!$membership) {
                 $client->members()->attach($user->id, ['role' => $invitation->role]);
+
+                \App\Models\AccessAuditEvent::create([
+                    'client_id' => $client->id,
+                    'actor_id' => $request->user()?->id,
+                    'subject_user_id' => $user->id,
+                    'invitation_id' => $invitation->id,
+                    'source' => 'web',
+                    'action' => 'workspace.member_added',
+                    'new_role' => $invitation->role,
+                    'created_at' => now(),
+                ]);
             }
 
             $invitation->update(['accepted_at' => now()]);
+
+            \App\Models\AccessAuditEvent::create([
+                'client_id' => $client->id,
+                'actor_id' => $request->user()?->id,
+                'subject_user_id' => $user->id,
+                'invitation_id' => $invitation->id,
+                'source' => 'web',
+                'action' => 'invitation.accepted',
+                'previous_role' => $previousRole,
+                'new_role' => $previousRole ?? $invitation->role,
+                'created_at' => now(),
+            ]);
         });
 
         if (!$request->user()) {

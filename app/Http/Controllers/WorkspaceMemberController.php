@@ -53,9 +53,24 @@ class WorkspaceMemberController extends Controller
                 $validated['role'] !== 'administrator'
             );
 
+            $previousRole = $membership->pivot->role;
+
             $locked->members()->updateExistingPivot($member->id, [
                 'role' => $validated['role'],
             ]);
+
+            if ($previousRole !== $validated['role']) {
+                \App\Models\AccessAuditEvent::create([
+                    'client_id' => $locked->id,
+                    'actor_id' => $request->user()->id,
+                    'subject_user_id' => $member->id,
+                    'source' => 'web',
+                    'action' => 'workspace.role_changed',
+                    'previous_role' => $previousRole,
+                    'new_role' => $validated['role'],
+                    'created_at' => now(),
+                ]);
+            }
         });
 
         if (!$request->user()->canAccessWorkspace($client, 'admin')) {
@@ -78,7 +93,19 @@ class WorkspaceMemberController extends Controller
             abort_unless($membership, 404);
 
             $this->protectLastAdministrator($locked, $membership, true);
+            $previousRole = $membership->pivot->role;
             $locked->members()->detach($member->id);
+
+            \App\Models\AccessAuditEvent::create([
+                'client_id' => $locked->id,
+                'actor_id' => $request->user()->id,
+                'subject_user_id' => $member->id,
+                'source' => 'web',
+                'action' => 'workspace.member_removed',
+                'previous_role' => $previousRole,
+                'new_role' => null,
+                'created_at' => now(),
+            ]);
         });
 
         if (!$request->user()->canAccessWorkspace($client, 'admin')) {
