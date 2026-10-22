@@ -264,6 +264,35 @@ class WorkspaceDocumentsTest extends TestCase
         $disk->assertExists($document->path);
     }
 
+
+    public function test_workspace_with_documents_cannot_be_deleted(): void
+    {
+        $client = $this->workspace();
+        $admin = User::factory()->create();
+        $admin->forceFill(['is_platform_admin' => true])->save();
+
+        $this->actingAs($admin);
+        $document = $this->upload($client);
+
+        $this->from(route('clients.show', $client))
+            ->delete('/clients/'.$client->id)
+            ->assertRedirect(route('clients.show', $client))
+            ->assertSessionHasErrors('documents');
+
+        $this->assertDatabaseHas('clients', ['id' => $client->id]);
+        $this->assertDatabaseHas('workspace_documents', ['id' => $document->id]);
+        Storage::disk('workspace_documents')->assertExists($document->path);
+
+        $this->delete('/clients/'.$client->id.'/documents/'.$document->id)
+            ->assertRedirect(route('workspace-documents.index', $client));
+
+        $this->delete('/clients/'.$client->id)
+            ->assertRedirect(route('clients.index'));
+
+        $this->assertDatabaseMissing('clients', ['id' => $client->id]);
+        Storage::disk('workspace_documents')->assertMissing($document->path);
+    }
+
     public function test_missing_file_returns_not_found_and_guests_require_login(): void
     {
         $client = $this->workspace();

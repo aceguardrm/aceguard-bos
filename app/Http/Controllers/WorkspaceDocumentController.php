@@ -58,6 +58,13 @@ class WorkspaceDocumentController extends Controller
         $disk = Storage::disk('workspace_documents');
 
         try {
+            \Illuminate\Support\Facades\DB::transaction(function () use (
+                $request, $client, $validated, $file, $extension, $name, $disk, &$path
+            ) {
+                $lockedClient = Client::whereKey($client->id)
+                    ->lockForUpdate()->firstOrFail();
+                $this->authorizeWorkspace($request, $lockedClient, 'edit');
+
             $path = $disk->putFileAs(
                 (string) $client->id,
                 $file,
@@ -80,6 +87,7 @@ class WorkspaceDocumentController extends Controller
             $document->client()->associate($client);
             $document->uploader()->associate($request->user());
             $document->save();
+            });
         } catch (\Throwable $error) {
             if (is_string($path) && $path !== '') {
                 try {

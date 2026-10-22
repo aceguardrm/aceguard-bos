@@ -297,7 +297,18 @@ class ClientController extends Controller
     public function destroy(
         Client $client
     ) {
-        $client->delete();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($client) {
+            $locked = Client::whereKey($client->id)
+                ->lockForUpdate()->firstOrFail();
+
+            if (\App\Models\WorkspaceDocument::where('client_id', $locked->id)->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'documents' => 'Delete this workspace’s documents through Knowledge Hub before deleting the workspace.',
+                ]);
+            }
+
+            $locked->delete();
+        });
 
 
         return redirect()
