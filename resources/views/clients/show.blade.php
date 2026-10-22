@@ -1087,37 +1087,21 @@
 
 
         {{-- DOCUMENTS --}}
-        <article class="ag-operation-card">
-
+        <a href="{{ route('workspace-documents.index', $client) }}"
+           class="ag-operation-card"
+           style="text-decoration:none;color:inherit">
             <div class="ag-operation-icon ag-operation-icon--green">
                 <i class="fas fa-folder-open"></i>
             </div>
-
             <div class="ag-operation-content">
-
-                <span>
-                    Documents
-                </span>
-
-                <strong>
-                    {{ $documentsCount }}
-                </strong>
-
-                <small>
-                    Knowledge Hub integration planned
-                </small>
-
+                <span>Documents</span>
+                <strong>{{ $documentsCount }}</strong>
+                <small>Private workspace documents</small>
             </div>
-
             <div class="ag-operation-action">
-
-                <span class="ag-operation-soon">
-                    Soon
-                </span>
-
+                <span>Open documents &rarr;</span>
             </div>
-
-        </article>
+        </a>
 
 
         {{-- SCHEDULED ACTIVITIES --}}

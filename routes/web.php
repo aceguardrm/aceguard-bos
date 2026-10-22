@@ -207,4 +207,29 @@ Route::middleware(['auth', \App\Http\Middleware\AuthorizeWorkspace::class])
             ->name('clients.access-history.index');
     });
 
+
+Route::middleware(['auth', \App\Http\Middleware\AuthorizeWorkspace::class])
+    ->group(function () {
+        Route::get('/clients/{client}/documents',
+            [\App\Http\Controllers\WorkspaceDocumentController::class, 'index'])
+            ->name('workspace-documents.index');
+
+        Route::post('/clients/{client}/documents',
+            [\App\Http\Controllers\WorkspaceDocumentController::class, 'store'])
+            ->middleware('throttle:20,1')
+            ->name('workspace-documents.store');
+
+        Route::get('/clients/{client}/documents/{document}/download',
+            [\App\Http\Controllers\WorkspaceDocumentController::class, 'download'])
+            ->name('workspace-documents.download');
+    });
+
+
+Route::middleware(['auth', \App\Http\Middleware\AuthorizeWorkspace::class])
+    ->group(function () {
+        Route::delete('/clients/{client}/documents/{document}',
+            [\App\Http\Controllers\WorkspaceDocumentController::class, 'destroy'])
+            ->name('workspace-documents.destroy');
+    });
+
 require __DIR__.'/auth.php';

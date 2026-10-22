@@ -243,14 +243,12 @@
 
 
         <a
-            href="#"
-            class="ag-navigation__item"
+            href="{{ $currentClient ? route('workspace-documents.index', $currentClient) : route('clients.index') }}"
+            class="ag-navigation__item {{ request()->routeIs('workspace-documents.*') ? 'is-active' : '' }}"
+            title="{{ $currentClient ? 'Open workspace documents' : 'Select a workspace to open Knowledge Hub' }}"
         >
             <i class="fas fa-folder-open"></i>
-
-            <span>
-                Knowledge Hub
-            </span>
+            <span>Knowledge Hub</span>
         </a>
 
 

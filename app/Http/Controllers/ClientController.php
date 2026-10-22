@@ -173,7 +173,9 @@ class ClientController extends Controller
         ]
     )
     ->count();
-        $documentsCount = 0;
+        $documentsCount = \App\Models\WorkspaceDocument::query()
+            ->where('client_id', $client->id)
+            ->count();
         $appointmentsCount = 0;
 
 
