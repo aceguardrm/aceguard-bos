@@ -197,40 +197,25 @@
         </a>
 
 
-        <a
-            href="#"
-            class="ag-navigation__item"
-        >
+        <span class="ag-navigation__item" aria-disabled="true" title="Planned for a future release" style="opacity:.6;cursor:default">
             <i class="fab fa-microsoft"></i>
-
-            <span>
-                Microsoft 365
-            </span>
-        </a>
+            <span>Microsoft 365</span>
+            <span class="ag-navigation__badge">Planned</span>
+        </span>
 
 
-        <a
-            href="#"
-            class="ag-navigation__item"
-        >
+        <span class="ag-navigation__item" aria-disabled="true" title="Planned for a future release" style="opacity:.6;cursor:default">
             <i class="fas fa-clipboard-check"></i>
-
-            <span>
-                Compliance
-            </span>
-        </a>
+            <span>Compliance</span>
+            <span class="ag-navigation__badge">Planned</span>
+        </span>
 
 
-        <a
-            href="#"
-            class="ag-navigation__item"
-        >
+        <span class="ag-navigation__item" aria-disabled="true" title="Planned for a future release" style="opacity:.6;cursor:default">
             <i class="fas fa-triangle-exclamation"></i>
-
-            <span>
-                Risk Centre
-            </span>
-        </a>
+            <span>Risk Centre</span>
+            <span class="ag-navigation__badge">Planned</span>
+        </span>
 
 
         {{-- ============================================================
@@ -252,60 +237,36 @@
         </a>
 
 
-        <a
-            href="#"
-            class="ag-navigation__item"
-        >
+        <span class="ag-navigation__item" aria-disabled="true" title="Planned for a future release" style="opacity:.6;cursor:default">
             <i class="fas fa-calendar-days"></i>
-
-            <span>
-                Planner
-            </span>
-        </a>
+            <span>Planner</span>
+            <span class="ag-navigation__badge">Planned</span>
+        </span>
 
 
-        <a
-            href="#"
-            class="ag-navigation__item"
-        >
+        <span class="ag-navigation__item" aria-disabled="true" title="Planned for a future release" style="opacity:.6;cursor:default">
             <i class="fas fa-chart-line"></i>
-
-            <span>
-                Reports
-            </span>
-        </a>
+            <span>Reports</span>
+            <span class="ag-navigation__badge">Planned</span>
+        </span>
 
 
-        <a
-            href="#"
-            class="ag-navigation__item"
-        >
+        <span class="ag-navigation__item" aria-disabled="true" title="Planned for a future release" style="opacity:.6;cursor:default">
             <i class="fas fa-robot"></i>
-
-            <span>
-                AI Executive
-            </span>
-
-            <span class="ag-navigation__badge">
-                Soon
-            </span>
-        </a>
+            <span>AI Executive</span>
+            <span class="ag-navigation__badge">Planned</span>
+        </span>
 
     </nav>
 
 
     <div class="ag-sidebar__footer">
 
-        <a
-            href="#"
-            class="ag-navigation__item"
-        >
+        <span class="ag-navigation__item" aria-disabled="true" title="Planned for a future release" style="opacity:.6;cursor:default">
             <i class="fas fa-gear"></i>
-
-            <span>
-                Organisation
-            </span>
-        </a>
+            <span>Organisation</span>
+            <span class="ag-navigation__badge">Planned</span>
+        </span>
 
 
         <div class="ag-version">
